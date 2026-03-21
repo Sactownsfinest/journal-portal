@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0f0f0f;
+  --surface: #1a1a1a;
+  --card: #242424;
+  --border: #333;
+  --accent: #c8a96e;
+  --accent-light: #e8c98e;
+  --text: #f5f0e8;
+  --text-muted: #888;
+  --success: #4caf84;
+  --danger: #e05252;
+  --warning: #e8a030;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: Georgia, serif;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-[#c8a96e] text-[#0f0f0f] font-semibold px-4 py-2 rounded-lg
+           hover:bg-[#e8c98e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply border border-[#333] text-[#f5f0e8] px-4 py-2 rounded-lg
+           hover:border-[#c8a96e] hover:text-[#c8a96e] transition-colors;
+  }
+
+  .btn-danger {
+    @apply bg-[#e05252] text-white font-semibold px-4 py-2 rounded-lg
+           hover:bg-[#c43c3c] transition-colors disabled:opacity-50;
+  }
+
+  .card {
+    @apply bg-[#1a1a1a] border border-[#333] rounded-xl p-6;
+  }
+
+  .input {
+    @apply w-full bg-[#242424] border border-[#333] rounded-lg px-4 py-2.5
+           text-[#f5f0e8] placeholder:text-[#666]
+           focus:outline-none focus:border-[#c8a96e] transition-colors;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-[#c8a96e] mb-1.5;
+  }
+}
