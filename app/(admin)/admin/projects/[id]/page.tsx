@@ -5,7 +5,8 @@ import { BookOpen, Pencil, CheckCircle, XCircle, Clock, Download } from 'lucide-
 import InvoiceTimeline from '@/components/billing/InvoiceTimeline'
 import ProjectStatusUpdater from '@/components/ProjectStatusUpdater'
 import SectionManager from '@/components/approval/SectionManager'
-import type { Section, Invoice, Page, Project } from '@/types'
+import EngagementLetterEditor from '@/components/EngagementLetterEditor'
+import type { Section, Invoice, Page, Project, EngagementLetter } from '@/types'
 
 export default async function AdminProjectPage({ params }: { params: { id: string } }) {
   const supabase = await createClient()
@@ -18,14 +19,16 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
 
   if (!project) notFound()
 
-  const [pagesRes, sectionsRes, invoicesRes] = await Promise.all([
+  const [pagesRes, sectionsRes, invoicesRes, letterRes] = await Promise.all([
     supabase.from('pages').select('id, order_index, template_type, status').eq('project_id', params.id).order('order_index'),
     supabase.from('sections').select('*').eq('project_id', params.id).order('page_start'),
     supabase.from('invoices').select('*').eq('project_id', params.id).order('milestone'),
+    supabase.from('engagement_letters').select('*').eq('project_id', params.id).maybeSingle(),
   ])
   const pages = pagesRes.data as Pick<Page, 'id' | 'order_index' | 'template_type' | 'status'>[] | null
   const sections = sectionsRes.data as Section[] | null
   const invoices = invoicesRes.data as Invoice[] | null
+  const engagementLetter = letterRes.data as EngagementLetter | null
 
   const totalSections = sections?.length ?? 0
   const approvedSections = sections?.filter(s => s.status === 'approved').length ?? 0
@@ -113,6 +116,16 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
           <ProjectStatusUpdater projectId={params.id} currentStatus={project.status} />
         </div>
       </div>
+
+      {/* Engagement letter */}
+      <EngagementLetterEditor
+        projectId={params.id}
+        projectTitle={project.title}
+        clientName={project.profiles?.name ?? ''}
+        clientEmail={project.profiles?.email ?? ''}
+        totalPrice={project.total_price}
+        initialLetter={engagementLetter}
+      />
 
       {/* Invoice timeline */}
       <div>

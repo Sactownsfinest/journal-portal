@@ -27,13 +27,13 @@ export default async function AdminDashboard() {
       <div
         className="rounded-3xl p-8 relative overflow-hidden"
         style={{
-          background: 'linear-gradient(135deg, #1C3356 0%, #243B60 50%, #1A2E50 100%)',
-          border: '1px solid rgba(212,175,55,0.22)',
-          boxShadow: '0 8px 40px rgba(0,0,0,0.3), 0 0 80px rgba(212,175,55,0.06)',
+          background: 'linear-gradient(135deg, #FFFBF2 0%, #FFF8ED 50%, #FDFAF5 100%)',
+          border: '1.5px solid rgba(184,131,42,0.2)',
+          boxShadow: '0 4px 24px rgba(44,36,22,0.07)',
         }}
       >
-        <div style={{ position: 'absolute', top: '-60px', right: '-30px', width: '250px', height: '250px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(212,175,55,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: '-40px', left: '35%', width: '180px', height: '180px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(123,47,190,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: '-40px', right: '-20px', width: '220px', height: '220px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(184,131,42,0.10) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: '-30px', left: '35%', width: '160px', height: '160px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,107,174,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
         <div className="relative flex items-center justify-between gap-6">
           <div>
             <div className="flex items-center gap-2 mb-3">
@@ -43,7 +43,7 @@ export default async function AdminDashboard() {
             </div>
             <h1 className="text-4xl font-bold mb-2" style={{ color: 'var(--text)' }}>
               Welcome back,{' '}
-              <span style={{ background: 'linear-gradient(135deg, #D4AF37, #F0CC55)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Shennel</span>
+              <span className="gold-text">Shennel</span>
             </h1>
             <p style={{ color: 'var(--text-muted)' }}>Create beautiful, bespoke 150-page journals for your clients.</p>
           </div>
@@ -54,27 +54,27 @@ export default async function AdminDashboard() {
       <div className="grid grid-cols-3 gap-4">
         <div className="stat-card-gold">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.25)' }}>
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'var(--accent-dim)', border: '1.5px solid rgba(184,131,42,0.2)' }}>
               <BookOpen size={20} style={{ color: 'var(--accent)' }} />
             </div>
-            <span className="text-4xl font-bold" style={{ background: 'linear-gradient(135deg, #D4AF37, #F0CC55)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{totalProjects}</span>
+            <span className="text-4xl font-bold gold-text">{totalProjects}</span>
           </div>
           <p className="font-semibold" style={{ color: 'var(--text)' }}>Total Projects</p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>All journals created</p>
         </div>
         <div className="stat-card-violet">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'rgba(123,47,190,0.2)', border: '1px solid rgba(168,85,247,0.3)' }}>
-              <Clock size={20} style={{ color: 'var(--violet-light)' }} />
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'var(--violet-dim)', border: '1.5px solid rgba(139,107,174,0.2)' }}>
+              <Clock size={20} style={{ color: 'var(--violet)' }} />
             </div>
-            <span className="text-4xl font-bold" style={{ color: 'var(--violet-light)' }}>{activeProjects}</span>
+            <span className="text-4xl font-bold" style={{ color: 'var(--violet)' }}>{activeProjects}</span>
           </div>
           <p className="font-semibold" style={{ color: 'var(--text)' }}>In Progress</p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Currently active</p>
         </div>
         <div className="stat-card-teal">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'rgba(45,212,191,0.15)', border: '1px solid rgba(45,212,191,0.3)' }}>
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'rgba(74,158,127,0.10)', border: '1.5px solid rgba(74,158,127,0.2)' }}>
               <CheckCircle size={20} style={{ color: 'var(--success)' }} />
             </div>
             <span className="text-4xl font-bold" style={{ color: 'var(--success)' }}>{completeProjects}</span>
@@ -89,7 +89,7 @@ export default async function AdminDashboard() {
       <div>
         <h2 className="section-heading mb-5">All Projects</h2>
         {!projects || projects.length === 0 ? (
-          <div className="rounded-3xl p-16 text-center" style={{ background: 'linear-gradient(135deg, rgba(30,52,84,0.5), rgba(26,46,69,0.5))', border: '1px dashed rgba(45,80,128,0.5)' }}>
+          <div className="rounded-3xl p-16 text-center" style={{ background: 'linear-gradient(135deg, #FFFBF5, #FFF8EE)', border: '1.5px dashed rgba(184,131,42,0.3)' }}>
             <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-5" style={{ background: 'var(--accent-dim)', border: '1px solid rgba(212,175,55,0.25)' }}>
               <Sparkles size={32} style={{ color: 'var(--accent)' }} />
             </div>
@@ -117,12 +117,12 @@ async function ProjectCard({ project }: { project: Project & { profiles: { name:
   const approvalPct = totalSections > 0 ? Math.round((approvedSections / totalSections) * 100) : 0
   const paidAmount = invoices?.filter(i => i.status === 'paid').reduce((sum, i) => sum + i.amount, 0) ?? 0
 
-  const statusBadge: Record<string, string> = { draft: 'badge-gold', in_progress: 'badge-violet', ready_for_review: 'badge-gold', complete: 'badge-success' }
-  const statusLabel: Record<string, string> = { draft: 'Draft', in_progress: 'In Progress', ready_for_review: 'Ready for Review', complete: 'Complete' }
+  const statusBadge: Record<string, string> = { draft: 'badge-gold', awaiting_deposit: 'badge-gold', in_progress: 'badge-violet', ready_for_review: 'badge-gold', complete: 'badge-success' }
+  const statusLabel: Record<string, string> = { draft: 'Draft', awaiting_deposit: 'Awaiting Deposit', in_progress: 'In Progress', ready_for_review: 'Ready for Review', complete: 'Complete' }
   const accentColor = project.status === 'complete' ? 'var(--success)' : (project.status === 'in_progress' || project.status === 'ready_for_review') ? 'var(--violet-light)' : 'var(--accent)'
 
   return (
-    <div className="rounded-2xl p-6" style={{ background: 'linear-gradient(135deg, var(--card) 0%, rgba(30,52,84,0.85) 100%)', border: '1px solid var(--border)', boxShadow: '0 2px 16px rgba(0,0,0,0.2)' }}>
+    <div className="rounded-2xl p-6" style={{ background: 'var(--card)', border: '1.5px solid var(--border)', boxShadow: '0 2px 12px rgba(44,36,22,0.06)' }}>
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-2">
@@ -146,7 +146,7 @@ async function ProjectCard({ project }: { project: Project & { profiles: { name:
         <div className="flex flex-col items-end gap-3 shrink-0">
           <div className="text-right">
             <p className="text-xs uppercase tracking-wider mb-0.5" style={{ color: 'var(--text-muted)' }}>Total</p>
-            <p className="font-bold text-xl" style={{ background: 'linear-gradient(135deg, #D4AF37, #F0CC55)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+            <p className="font-bold text-xl gold-text">
               ${project.total_price.toLocaleString()}
             </p>
             {paidAmount > 0 && <p className="text-xs mt-0.5" style={{ color: 'var(--success)' }}>${paidAmount.toLocaleString()} paid</p>}

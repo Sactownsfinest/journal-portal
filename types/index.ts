@@ -7,7 +7,22 @@ export interface Profile {
   email: string
 }
 
-export type ProjectStatus = 'draft' | 'in_progress' | 'ready_for_review' | 'complete'
+export type ProjectStatus = 'draft' | 'awaiting_deposit' | 'in_progress' | 'ready_for_review' | 'complete'
+
+export type EngagementStatus = 'draft' | 'sent' | 'accepted'
+
+export interface EngagementLetter {
+  id: string
+  project_id: string
+  content: string
+  deposit_amount: number
+  status: EngagementStatus
+  accepted_at?: string
+  accepted_by?: string
+  stripe_deposit_invoice_id?: string
+  created_at: string
+  updated_at: string
+}
 
 export interface Project {
   id: string
@@ -65,6 +80,7 @@ export interface Invoice {
   milestone: 25 | 50 | 75 | 100
   stripe_invoice_id?: string
   stripe_customer_id?: string
+  hosted_invoice_url?: string
   amount: number
   status: InvoiceStatus
   created_at: string

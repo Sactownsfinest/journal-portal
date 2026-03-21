@@ -105,8 +105,8 @@ async function createMilestoneInvoice({
     ],
   })
 
-  // Send (auto-finalizes)
-  await stripe.invoices.sendInvoice(invoice.id)
+  // Send (auto-finalizes) — returns finalized invoice with hosted_invoice_url
+  const sent = await stripe.invoices.sendInvoice(invoice.id)
 
   // Save to DB
   await supabase.from('invoices').insert({
@@ -114,6 +114,7 @@ async function createMilestoneInvoice({
     milestone,
     stripe_invoice_id: invoice.id,
     stripe_customer_id: customer.id,
+    hosted_invoice_url: sent.hosted_invoice_url ?? null,
     amount: project.total_price * 0.25,
     status: 'sent',
   })

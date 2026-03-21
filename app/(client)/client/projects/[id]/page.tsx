@@ -3,11 +3,21 @@ import { notFound, redirect } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import ApprovalPanel from '@/components/approval/ApprovalPanel'
 import ClientNav from '@/components/ClientNav'
-import type { Page, Section, Invoice } from '@/types'
+import EngagementLetterGate from '@/components/EngagementLetterGate'
+import DepositCheckoutButton from '@/components/DepositCheckoutButton'
+import JournalProgressBar from '@/components/JournalProgressBar'
+import { CheckCircle, Sparkles } from 'lucide-react'
+import type { Page, Section, Invoice, EngagementLetter } from '@/types'
 
 const FlipbookViewer = dynamic(() => import('@/components/flipbook/FlipbookViewer'), { ssr: false })
 
-export default async function ClientProjectPage({ params }: { params: { id: string } }) {
+export default async function ClientProjectPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string }
+  searchParams: { deposit?: string }
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -27,20 +37,45 @@ export default async function ClientProjectPage({ params }: { params: { id: stri
 
   if (!project) notFound()
 
-  const [pagesRes, sectionsRes, invoicesRes] = await Promise.all([
+  const [pagesRes, sectionsRes, invoicesRes, letterRes] = await Promise.all([
     supabase.from('pages').select('*').eq('project_id', params.id).order('order_index'),
     supabase.from('sections').select('*').eq('project_id', params.id).order('page_start'),
     supabase.from('invoices').select('*').eq('project_id', params.id).order('milestone'),
+    supabase.from('engagement_letters').select('*').eq('project_id', params.id).maybeSingle(),
   ])
   const pages = pagesRes.data as Page[] | null
   const sections = sectionsRes.data as Section[] | null
   const invoices = invoicesRes.data as Invoice[] | null
+  const engagementLetter = letterRes.data as EngagementLetter | null
 
   const totalSections = sections?.length ?? 0
   const approvedSections = sections?.filter(s => s.status === 'approved').length ?? 0
   const approvalPct = totalSections > 0 ? Math.round((approvedSections / totalSections) * 100) : 0
 
   const isReadyForReview = project.status === 'ready_for_review' || project.status === 'complete'
+
+  // Gate: if a letter was sent but not yet accepted, show the review screen
+  const needsLetterAcceptance = engagementLetter && engagementLetter.status !== 'accepted'
+
+  if (needsLetterAcceptance) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <ClientNav clientName={profile?.name ?? 'there'} />
+        <div
+          className="fixed inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse 80% 30% at 50% 0%, rgba(212,175,55,0.06) 0%, transparent 60%)' }}
+        />
+        <main className="flex-1 relative">
+          <EngagementLetterGate
+            letter={engagementLetter}
+            projectId={params.id}
+            projectTitle={project.title}
+            clientName={profile?.name ?? 'Client'}
+          />
+        </main>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -50,7 +85,7 @@ export default async function ClientProjectPage({ params }: { params: { id: stri
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse 80% 30% at 50% 0%, rgba(123,47,190,0.06) 0%, transparent 60%)',
+          background: 'radial-gradient(ellipse 80% 30% at 50% 0%, rgba(184,131,42,0.06) 0%, transparent 60%)',
         }}
       />
 
@@ -61,11 +96,61 @@ export default async function ClientProjectPage({ params }: { params: { id: stri
           <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Your custom 150-page journal</p>
         </div>
 
+        {/* Deposit success banner */}
+        {searchParams.deposit === 'success' && (
+          <div
+            className="rounded-2xl px-6 py-5 flex items-center gap-4"
+            style={{ background: 'rgba(45,212,191,0.08)', border: '1px solid rgba(45,212,191,0.3)' }}
+          >
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: 'rgba(45,212,191,0.12)', border: '1px solid rgba(45,212,191,0.25)' }}
+            >
+              <CheckCircle size={22} style={{ color: 'var(--success)' }} />
+            </div>
+            <div>
+              <p className="font-semibold" style={{ color: 'var(--success)' }}>Deposit received — we&apos;re getting started!</p>
+              <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                You&apos;ll receive an email update as we begin crafting your journal.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Deposit required banner */}
+        {project.status === 'awaiting_deposit' && engagementLetter && !engagementLetter.stripe_deposit_invoice_id && searchParams.deposit !== 'success' && (
+          <div
+            className="rounded-2xl overflow-hidden"
+            style={{ border: '1px solid rgba(212,175,55,0.3)', background: 'linear-gradient(135deg, rgba(30,52,84,0.9), rgba(26,46,69,0.9))' }}
+          >
+            <div
+              className="px-6 py-4 flex items-center gap-3"
+              style={{ borderBottom: '1px solid rgba(212,175,55,0.15)', background: 'rgba(212,175,55,0.05)' }}
+            >
+              <Sparkles size={16} style={{ color: 'var(--accent)' }} />
+              <span className="font-semibold" style={{ color: 'var(--accent)' }}>One step before we begin</span>
+            </div>
+            <div className="px-6 py-5 flex items-center justify-between gap-6 flex-wrap">
+              <div>
+                <p className="font-medium mb-1">Submit your deposit to kick off your journal</p>
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                  Your engagement letter has been accepted. A deposit of{' '}
+                  <span style={{ color: 'var(--accent)' }}>${engagementLetter.deposit_amount.toLocaleString()}</span> is required to begin work.
+                </p>
+              </div>
+              <DepositCheckoutButton
+                projectId={params.id}
+                depositAmount={engagementLetter.deposit_amount}
+              />
+            </div>
+          </div>
+        )}
+
         {!isReadyForReview ? (
           <div className="card-glow text-center py-20">
             <div
               className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
-              style={{ background: 'var(--violet-dim)', border: '1px solid rgba(123,47,190,0.3)' }}
+              style={{ background: 'var(--violet-dim)', border: '1.5px solid rgba(139,107,174,0.2)' }}
             >
               <span className="text-4xl">✨</span>
             </div>
@@ -76,66 +161,15 @@ export default async function ClientProjectPage({ params }: { params: { id: stri
           </div>
         ) : (
           <>
-            {/* Progress bar */}
+            {/* Progress bar with book + milestones */}
             {totalSections > 0 && (
-              <div className="card-glow">
-                <div className="flex justify-between items-center mb-3">
-                  <h2 className="font-semibold">Your Approval Progress</h2>
-                  <span className="font-bold text-xl gold-text">{approvalPct}%</span>
-                </div>
-                <div className="progress-bar h-4">
-                  <div
-                    className="h-full rounded-full transition-all duration-700"
-                    style={{
-                      width: `${approvalPct}%`,
-                      background: approvalPct >= 100
-                        ? 'var(--success)'
-                        : 'linear-gradient(90deg, #D4AF37, #7B2FBE)',
-                    }}
-                  />
-                </div>
-                <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
-                  {approvedSections} of {totalSections} sections approved
-                  {approvalPct >= 100 && (
-                    <span style={{ color: 'var(--success)' }}> — Journal complete! 🎉</span>
-                  )}
-                </p>
-              </div>
-            )}
-
-            {/* Invoices */}
-            {invoices && invoices.length > 0 && (
-              <div className="card">
-                <h2 className="font-semibold mb-4">Payment Milestones</h2>
-                <div className="flex gap-3 flex-wrap">
-                  {([25, 50, 75, 100] as const).map(milestone => {
-                    const inv = invoices.find(i => i.milestone === milestone)
-                    const isPaid = inv?.status === 'paid'
-                    const isSent = inv?.status === 'sent'
-                    return (
-                      <div
-                        key={milestone}
-                        className="flex-1 min-w-[100px] rounded-xl border p-3 text-center transition-all"
-                        style={{
-                          borderColor: isPaid ? 'rgba(45,212,191,0.3)' : isSent ? 'rgba(251,191,36,0.3)' : 'var(--border)',
-                          background: isPaid ? 'rgba(45,212,191,0.06)' : isSent ? 'rgba(251,191,36,0.06)' : 'var(--surface)',
-                        }}
-                      >
-                        <p className="text-xl font-bold gold-text">{milestone}%</p>
-                        <p
-                          className="text-xs mt-0.5"
-                          style={{ color: isPaid ? 'var(--success)' : isSent ? 'var(--warning)' : 'var(--text-muted)' }}
-                        >
-                          {isPaid ? 'Paid ✓' : isSent ? 'Invoice sent' : 'Upcoming'}
-                        </p>
-                        <p className="text-xs mt-0.5" style={{ color: 'var(--accent)' }}>
-                          ${(project.total_price * 0.25).toFixed(0)}
-                        </p>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
+              <JournalProgressBar
+                approvalPct={approvalPct}
+                approvedSections={approvedSections}
+                totalSections={totalSections}
+                invoices={invoices ?? []}
+                totalPrice={project.total_price}
+              />
             )}
 
             {/* Flipbook */}
