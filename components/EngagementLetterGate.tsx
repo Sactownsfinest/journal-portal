@@ -13,7 +13,6 @@ interface Props {
 }
 
 export default function EngagementLetterGate({ letter, projectId, projectTitle, clientName }: Props) {
-  const router = useRouter()
   const [accepting, setAccepting] = useState(false)
   const [accepted, setAccepted] = useState(false)
   const [error, setError] = useState('')

@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 
   // Deposit paid (via Stripe Checkout Session)
   if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as Stripe.CheckoutSession
+    const session = event.data.object as Stripe.Checkout.Session
 
     if (session.metadata?.type === 'deposit') {
       const { project_id, letter_id } = session.metadata
