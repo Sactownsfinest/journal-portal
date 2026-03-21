@@ -44,10 +44,14 @@ interface Props {
 export default function TemplateSelector({ onSelect, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="w-full max-w-lg card">
+      <div className="w-full max-w-lg card-glow">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold">Choose Page Template</h2>
-          <button onClick={onClose} className="text-[#888] hover:text-[#f5f0e8]">
+          <h2 className="text-lg font-bold gold-text">Choose Page Template</h2>
+          <button
+            onClick={onClose}
+            className="transition-colors hover:text-[#F8F4E3]"
+            style={{ color: 'var(--text-muted)' }}
+          >
             <X size={20} />
           </button>
         </div>
@@ -57,14 +61,23 @@ export default function TemplateSelector({ onSelect, onClose }: Props) {
             <button
               key={t.type}
               onClick={() => onSelect(t.type)}
-              className="flex items-center gap-4 p-4 rounded-xl border border-[#333] hover:border-[#c8a96e]/50 hover:bg-[#c8a96e]/5 transition-all text-left group"
+              className="flex items-center gap-4 p-4 rounded-xl text-left group transition-all"
+              style={{ border: '1px solid var(--border)' }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = 'rgba(212,175,55,0.5)'
+                e.currentTarget.style.background = 'var(--accent-dim)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = 'var(--border)'
+                e.currentTarget.style.background = 'transparent'
+              }}
             >
               <span className="text-3xl w-10 text-center">{t.preview}</span>
               <div>
-                <p className="font-medium text-[#f5f0e8] group-hover:text-[#c8a96e] transition-colors">
+                <p className="font-medium transition-colors group-hover:text-[#D4AF37]" style={{ color: 'var(--text)' }}>
                   {t.label}
                 </p>
-                <p className="text-sm text-[#888] mt-0.5">{t.description}</p>
+                <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>{t.description}</p>
               </div>
             </button>
           ))}

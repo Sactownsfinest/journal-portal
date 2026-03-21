@@ -34,9 +34,10 @@ export default function ProjectStatusUpdater({ projectId, currentStatus }: Props
 
   return (
     <div className="flex items-center gap-2">
-      {saving && <span className="text-xs text-[#888]">Saving…</span>}
+      {saving && <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Saving…</span>}
       <select
-        className="text-xs bg-[#242424] border border-[#333] rounded-lg px-2 py-1 text-[#f5f0e8] focus:outline-none focus:border-[#c8a96e]"
+        className="text-xs rounded-lg px-2 py-1 focus:outline-none"
+        style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }}
         value={status}
         onChange={handleChange}
       >

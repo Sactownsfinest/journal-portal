@@ -62,7 +62,7 @@ export default function CreateProjectModal({ clients }: { clients: Client[] }) {
           <div className="w-full max-w-md card">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold">New Journal Project</h2>
-              <button onClick={() => setOpen(false)} className="text-[#888] hover:text-[#f5f0e8]">
+              <button onClick={() => setOpen(false)} className="transition-colors hover:text-[#F8F4E3]" style={{ color: 'var(--text-muted)' }}>
                 <X size={20} />
               </button>
             </div>
@@ -105,13 +105,13 @@ export default function CreateProjectModal({ clients }: { clients: Client[] }) {
                   onChange={e => setForm(f => ({ ...f, total_price: e.target.value }))}
                   required
                 />
-                <p className="text-xs text-[#888] mt-1">
+                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
                   Client will be invoiced 25% (${ form.total_price ? (parseFloat(form.total_price) * 0.25).toFixed(2) : '0.00' }) at each approval milestone.
                 </p>
               </div>
 
               {error && (
-                <p className="text-sm text-[#e05252]">{error}</p>
+                <p className="text-sm" style={{ color: 'var(--danger)' }}>{error}</p>
               )}
 
               <div className="flex gap-3 pt-2">

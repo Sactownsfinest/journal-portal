@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { Sparkles } from 'lucide-react'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -48,17 +49,32 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
+      {/* Background glow effect */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(212,175,55,0.08) 0%, transparent 70%)',
+        }}
+      />
+
+      <div className="w-full max-w-sm relative">
         {/* Logo / Brand */}
         <div className="text-center mb-10">
-          <div className="inline-block w-16 h-16 rounded-full bg-[#c8a96e]/10 border border-[#c8a96e]/30 flex items-center justify-center mb-4">
-            <span className="text-2xl">📖</span>
+          <div
+            className="inline-flex w-20 h-20 rounded-full items-center justify-center mb-5"
+            style={{
+              background: 'var(--accent-dim)',
+              border: '1px solid rgba(212,175,55,0.3)',
+              boxShadow: '0 0 40px rgba(212,175,55,0.15)',
+            }}
+          >
+            <Sparkles size={32} style={{ color: 'var(--accent)' }} />
           </div>
-          <h1 className="text-2xl font-bold text-[#f5f0e8]">Journal Portal</h1>
-          <p className="text-[#888] text-sm mt-1">Your custom journal workspace</p>
+          <h1 className="text-3xl font-bold gold-text mb-1">Journal Portal</h1>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Your custom journal workspace</p>
         </div>
 
-        <form onSubmit={handleLogin} className="card space-y-5">
+        <form onSubmit={handleLogin} className="card-glow space-y-5">
           <div>
             <label className="label">Email</label>
             <input
@@ -85,12 +101,12 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <p className="text-sm text-[#e05252] bg-[#e05252]/10 border border-[#e05252]/20 rounded-lg px-4 py-2">
+            <p className="text-sm badge-danger px-4 py-2 rounded-lg">
               {error}
             </p>
           )}
 
-          <button type="submit" className="btn-primary w-full" disabled={loading}>
+          <button type="submit" className="btn-primary w-full text-base py-3" disabled={loading}>
             {loading ? 'Signing in…' : 'Sign In'}
           </button>
         </form>

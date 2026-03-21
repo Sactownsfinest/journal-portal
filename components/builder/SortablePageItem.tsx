@@ -14,10 +14,10 @@ const TEMPLATE_LABELS: Record<string, string> = {
 }
 
 const STATUS_DOT: Record<string, string> = {
-  draft: 'bg-[#555]',
-  pending_review: 'bg-[#e8a030]',
-  approved: 'bg-[#4caf84]',
-  rejected: 'bg-[#e05252]',
+  draft: '#7A9AB8',
+  pending_review: '#FBBF24',
+  approved: '#2DD4BF',
+  rejected: '#F87171',
 }
 
 interface Props {
@@ -40,16 +40,19 @@ export default function SortablePageItem({ page, index, isSelected, onSelect, on
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      className={`flex items-center gap-1.5 rounded-lg px-2 py-2 mb-1 cursor-pointer group transition-colors ${
-        isSelected ? 'bg-[#c8a96e]/15 border border-[#c8a96e]/30' : 'hover:bg-[#242424]'
-      }`}
+      style={{
+        ...style,
+        background: isSelected ? 'rgba(212,175,55,0.1)' : undefined,
+        border: isSelected ? '1px solid rgba(212,175,55,0.3)' : '1px solid transparent',
+      }}
+      className="flex items-center gap-1.5 rounded-lg px-2 py-2 mb-1 cursor-pointer group transition-all hover:bg-[rgba(212,175,55,0.05)]"
       onClick={onSelect}
     >
       <button
         {...attributes}
         {...listeners}
-        className="text-[#555] hover:text-[#888] cursor-grab active:cursor-grabbing"
+        className="cursor-grab active:cursor-grabbing transition-colors"
+        style={{ color: 'var(--border)' }}
         onClick={e => e.stopPropagation()}
       >
         <GripVertical size={14} />
@@ -57,21 +60,31 @@ export default function SortablePageItem({ page, index, isSelected, onSelect, on
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
-          <span className="text-xs font-medium text-[#888]">{index + 1}</span>
-          <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[page.status]}`} />
-          <span className="text-xs text-[#f5f0e8] truncate">{TEMPLATE_LABELS[page.template_type]}</span>
+          <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{index + 1}</span>
+          <span
+            className="w-1.5 h-1.5 rounded-full"
+            style={{ background: STATUS_DOT[page.status] }}
+          />
+          <span className="text-xs truncate" style={{ color: 'var(--text)' }}>
+            {TEMPLATE_LABELS[page.template_type]}
+          </span>
         </div>
         {page.content.title_text && (
-          <p className="text-xs text-[#666] truncate mt-0.5">{page.content.title_text}</p>
+          <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-muted)' }}>
+            {page.content.title_text}
+          </p>
         )}
         {page.content.prompt_text && (
-          <p className="text-xs text-[#666] truncate mt-0.5">{page.content.prompt_text}</p>
+          <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-muted)' }}>
+            {page.content.prompt_text}
+          </p>
         )}
       </div>
 
       <button
         onClick={e => { e.stopPropagation(); onDelete() }}
-        className="text-[#555] hover:text-[#e05252] opacity-0 group-hover:opacity-100 transition-opacity"
+        className="opacity-0 group-hover:opacity-100 transition-opacity hover:text-[#F87171]"
+        style={{ color: 'var(--text-muted)' }}
       >
         <Trash2 size={13} />
       </button>

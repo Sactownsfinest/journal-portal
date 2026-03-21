@@ -3,52 +3,173 @@
 @tailwind utilities;
 
 :root {
-  --bg: #0f0f0f;
-  --surface: #1a1a1a;
-  --card: #242424;
-  --border: #333;
-  --accent: #c8a96e;
-  --accent-light: #e8c98e;
-  --text: #f5f0e8;
-  --text-muted: #888;
-  --success: #4caf84;
-  --danger: #e05252;
-  --warning: #e8a030;
+  --bg: #0D1B2A;
+  --surface: #122338;
+  --card: #1A3050;
+  --border: #2A4A6B;
+  --accent: #D4AF37;
+  --accent-light: #E8CC6A;
+  --accent-dim: rgba(212,175,55,0.15);
+  --violet: #7B2FBE;
+  --violet-light: #9D4EDD;
+  --violet-dim: rgba(123,47,190,0.15);
+  --text: #F8F4E3;
+  --text-muted: #7A9AB8;
+  --success: #2DD4BF;
+  --danger: #F87171;
+  --warning: #FBBF24;
 }
+
+* { box-sizing: border-box; }
 
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: Georgia, serif;
+  font-family: Georgia, 'Times New Roman', serif;
 }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
 @layer components {
   .btn-primary {
-    @apply bg-[#c8a96e] text-[#0f0f0f] font-semibold px-4 py-2 rounded-lg
-           hover:bg-[#e8c98e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply font-semibold px-5 py-2.5 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed;
+    background: linear-gradient(135deg, #D4AF37, #E8CC6A);
+    color: #0D1B2A;
+    box-shadow: 0 2px 12px rgba(212,175,55,0.3);
+  }
+  .btn-primary:hover:not(:disabled) {
+    box-shadow: 0 4px 20px rgba(212,175,55,0.5);
+    transform: translateY(-1px);
   }
 
   .btn-secondary {
-    @apply border border-[#333] text-[#f5f0e8] px-4 py-2 rounded-lg
-           hover:border-[#c8a96e] hover:text-[#c8a96e] transition-colors;
+    @apply font-medium px-4 py-2 rounded-lg transition-all;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    background: transparent;
+  }
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .btn-violet {
+    @apply font-semibold px-5 py-2.5 rounded-lg transition-all;
+    background: linear-gradient(135deg, #7B2FBE, #9D4EDD);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(123,47,190,0.3);
+  }
+  .btn-violet:hover {
+    box-shadow: 0 4px 20px rgba(123,47,190,0.5);
+    transform: translateY(-1px);
   }
 
   .btn-danger {
-    @apply bg-[#e05252] text-white font-semibold px-4 py-2 rounded-lg
-           hover:bg-[#c43c3c] transition-colors disabled:opacity-50;
+    @apply font-semibold px-4 py-2 rounded-lg transition-all;
+    background: rgba(248,113,113,0.15);
+    border: 1px solid rgba(248,113,113,0.3);
+    color: #F87171;
+  }
+  .btn-danger:hover {
+    background: rgba(248,113,113,0.25);
+  }
+
+  .btn-success {
+    @apply font-semibold px-4 py-2 rounded-lg transition-all;
+    background: rgba(45,212,191,0.15);
+    border: 1px solid rgba(45,212,191,0.3);
+    color: #2DD4BF;
+  }
+  .btn-success:hover {
+    background: rgba(45,212,191,0.25);
   }
 
   .card {
-    @apply bg-[#1a1a1a] border border-[#333] rounded-xl p-6;
+    background: var(--card);
+    border: 1px solid var(--border);
+    @apply rounded-2xl p-6;
+  }
+
+  .card-glow {
+    background: var(--card);
+    border: 1px solid var(--border);
+    @apply rounded-2xl p-6;
+    box-shadow: 0 0 30px rgba(212,175,55,0.05);
   }
 
   .input {
-    @apply w-full bg-[#242424] border border-[#333] rounded-lg px-4 py-2.5
-           text-[#f5f0e8] placeholder:text-[#666]
-           focus:outline-none focus:border-[#c8a96e] transition-colors;
+    @apply w-full rounded-xl px-4 py-3 transition-all;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: Georgia, serif;
+  }
+  .input::placeholder { color: var(--text-muted); }
+  .input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(212,175,55,0.1);
   }
 
   .label {
-    @apply block text-sm font-medium text-[#c8a96e] mb-1.5;
+    @apply block text-sm font-medium mb-1.5;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+  }
+
+  .badge-gold {
+    @apply text-xs px-2.5 py-1 rounded-full font-medium;
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 1px solid rgba(212,175,55,0.2);
+  }
+
+  .badge-violet {
+    @apply text-xs px-2.5 py-1 rounded-full font-medium;
+    background: var(--violet-dim);
+    color: var(--violet-light);
+    border: 1px solid rgba(123,47,190,0.2);
+  }
+
+  .badge-success {
+    @apply text-xs px-2.5 py-1 rounded-full font-medium;
+    background: rgba(45,212,191,0.1);
+    color: #2DD4BF;
+    border: 1px solid rgba(45,212,191,0.2);
+  }
+
+  .badge-danger {
+    @apply text-xs px-2.5 py-1 rounded-full font-medium;
+    background: rgba(248,113,113,0.1);
+    color: #F87171;
+    border: 1px solid rgba(248,113,113,0.2);
+  }
+
+  .progress-bar {
+    @apply h-2 rounded-full overflow-hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-700;
+    background: linear-gradient(90deg, #D4AF37, #7B2FBE);
+  }
+
+  .gold-text {
+    background: linear-gradient(135deg, #D4AF37, #E8CC6A);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-border {
+    border: 1px solid transparent;
+    background-clip: padding-box;
+    position: relative;
   }
 }

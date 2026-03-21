@@ -35,7 +35,6 @@ export default function ApprovalPanel({ sections: initial, projectId }: Props) {
           : s
       ))
 
-      // Trigger milestone check
       await fetch('/api/invoices/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -72,25 +71,34 @@ interface CardProps {
 
 function SectionCard({ section, note, onNoteChange, onDecision, loading }: CardProps) {
   const [showNotes, setShowNotes] = useState(section.status === 'rejected')
-
   const isDone = section.status === 'approved' || section.status === 'rejected'
 
+  const borderOverride = section.status === 'approved'
+    ? 'rgba(45,212,191,0.3)'
+    : section.status === 'rejected'
+    ? 'rgba(248,113,113,0.3)'
+    : 'var(--border)'
+
   return (
-    <div className={`card transition-colors ${
-      section.status === 'approved' ? 'border-[#4caf84]/30' :
-      section.status === 'rejected' ? 'border-[#e05252]/30' : ''
-    }`}>
+    <div
+      className="card transition-all"
+      style={{ borderColor: borderOverride }}
+    >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            {section.status === 'approved' && <CheckCircle size={16} className="text-[#4caf84]" />}
-            {section.status === 'rejected' && <XCircle size={16} className="text-[#e05252]" />}
+            {section.status === 'approved' && <CheckCircle size={16} style={{ color: 'var(--success)' }} />}
+            {section.status === 'rejected' && <XCircle size={16} style={{ color: 'var(--danger)' }} />}
             <h3 className="font-semibold">{section.name}</h3>
           </div>
-          <p className="text-sm text-[#888] mt-0.5">Pages {section.page_start}–{section.page_end}</p>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
+            Pages {section.page_start}–{section.page_end}
+          </p>
 
           {section.status !== 'pending' && section.client_notes && (
-            <p className="text-sm text-[#e8a030] mt-2">Your note: "{section.client_notes}"</p>
+            <p className="text-sm mt-2" style={{ color: 'var(--warning)' }}>
+              Your note: &ldquo;{section.client_notes}&rdquo;
+            </p>
           )}
         </div>
 
@@ -98,7 +106,11 @@ function SectionCard({ section, note, onNoteChange, onDecision, loading }: CardP
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setShowNotes(v => !v)}
-              className={`p-2 rounded-lg border transition-colors ${showNotes ? 'border-[#c8a96e]/50 text-[#c8a96e]' : 'border-[#333] text-[#888] hover:text-[#f5f0e8]'}`}
+              className="p-2 rounded-lg border transition-colors"
+              style={showNotes
+                ? { borderColor: 'rgba(212,175,55,0.5)', color: 'var(--accent)' }
+                : { borderColor: 'var(--border)', color: 'var(--text-muted)' }
+              }
               title="Add note"
             >
               <MessageSquare size={15} />
@@ -114,7 +126,7 @@ function SectionCard({ section, note, onNoteChange, onDecision, loading }: CardP
             <button
               onClick={() => onDecision('approved')}
               disabled={loading}
-              className="bg-[#4caf84] text-white font-semibold px-4 py-2 rounded-lg hover:bg-[#3d9e70] transition-colors disabled:opacity-50 flex items-center gap-1.5 text-sm"
+              className="btn-success flex items-center gap-1.5 text-sm py-2 px-4"
             >
               <CheckCircle size={15} />
               Approve
@@ -123,15 +135,18 @@ function SectionCard({ section, note, onNoteChange, onDecision, loading }: CardP
         )}
 
         {isDone && (
-          <span className={`text-sm font-medium px-3 py-1 rounded-full ${
-            section.status === 'approved' ? 'text-[#4caf84] bg-[#4caf84]/10' : 'text-[#e05252] bg-[#e05252]/10'
-          }`}>
+          <span
+            className="text-sm font-medium px-3 py-1 rounded-full"
+            style={section.status === 'approved'
+              ? { color: 'var(--success)', background: 'rgba(45,212,191,0.1)' }
+              : { color: 'var(--danger)', background: 'rgba(248,113,113,0.1)' }
+            }
+          >
             {section.status === 'approved' ? 'Approved ✓' : 'Changes Requested'}
           </span>
         )}
       </div>
 
-      {/* Notes textarea */}
       {showNotes && !isDone && (
         <div className="mt-4">
           <label className="label">Note for designer (optional)</label>
@@ -145,8 +160,11 @@ function SectionCard({ section, note, onNoteChange, onDecision, loading }: CardP
       )}
 
       {loading && (
-        <div className="mt-3 flex items-center gap-2 text-sm text-[#888]">
-          <div className="w-4 h-4 border-2 border-[#c8a96e] border-t-transparent rounded-full animate-spin" />
+        <div className="mt-3 flex items-center gap-2 text-sm" style={{ color: 'var(--text-muted)' }}>
+          <div
+            className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }}
+          />
           Saving…
         </div>
       )}

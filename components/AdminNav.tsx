@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { BookOpen, LayoutDashboard, LogOut } from 'lucide-react'
+import { BookOpen, LayoutDashboard, LogOut, Sparkles } from 'lucide-react'
 
 export default function AdminNav({ adminName }: { adminName: string }) {
   const pathname = usePathname()
@@ -16,20 +16,24 @@ export default function AdminNav({ adminName }: { adminName: string }) {
   }
 
   return (
-    <nav className="border-b border-[#333] bg-[#1a1a1a]">
+    <nav className="border-b border-[#2A4A6B]" style={{ background: 'var(--surface)' }}>
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <Link href="/admin/dashboard" className="flex items-center gap-2 text-[#c8a96e] font-bold text-lg">
-            <BookOpen size={20} />
+          <Link href="/admin/dashboard" className="flex items-center gap-2 font-bold text-lg gold-text">
+            <Sparkles size={20} style={{ color: 'var(--accent)' }} />
             Journal Portal
           </Link>
           <Link
             href="/admin/dashboard"
             className={`flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg transition-colors ${
               pathname === '/admin/dashboard'
-                ? 'bg-[#c8a96e]/10 text-[#c8a96e]'
-                : 'text-[#888] hover:text-[#f5f0e8]'
+                ? 'text-[#D4AF37]'
+                : 'hover:text-[#F8F4E3]'
             }`}
+            style={pathname === '/admin/dashboard'
+              ? { background: 'rgba(212,175,55,0.12)', color: 'var(--accent)' }
+              : { color: 'var(--text-muted)' }
+            }
           >
             <LayoutDashboard size={15} />
             Dashboard
@@ -37,10 +41,11 @@ export default function AdminNav({ adminName }: { adminName: string }) {
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="text-sm text-[#888]">{adminName}</span>
+          <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{adminName}</span>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-1.5 text-sm text-[#888] hover:text-[#e05252] transition-colors"
+            className="flex items-center gap-1.5 text-sm transition-colors hover:text-[#F87171]"
+            style={{ color: 'var(--text-muted)' }}
           >
             <LogOut size={15} />
             Sign out

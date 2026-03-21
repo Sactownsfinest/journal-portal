@@ -19,42 +19,48 @@ export default function InvoiceTimeline({ invoices, totalPrice, approvalPct }: P
         const isReached = approvalPct >= milestone
         const status = invoice?.status
 
-        let icon = <Clock size={16} className="text-[#555]" />
-        let borderColor = 'border-[#333]'
-        let bgColor = 'bg-transparent'
+        let borderColor = 'var(--border)'
+        let bgColor = 'transparent'
         let label = 'Not reached'
-        let labelColor = 'text-[#555]'
+        let labelColor = 'var(--text-muted)'
+        let icon = <Clock size={16} style={{ color: 'var(--text-muted)' }} />
 
         if (status === 'paid') {
-          icon = <CheckCircle size={16} className="text-[#4caf84]" />
-          borderColor = 'border-[#4caf84]/40'
-          bgColor = 'bg-[#4caf84]/5'
-          label = 'Paid'
-          labelColor = 'text-[#4caf84]'
+          icon = <CheckCircle size={16} style={{ color: 'var(--success)' }} />
+          borderColor = 'rgba(45,212,191,0.4)'
+          bgColor = 'rgba(45,212,191,0.06)'
+          label = 'Paid ✓'
+          labelColor = 'var(--success)'
         } else if (status === 'sent') {
-          icon = <Send size={16} className="text-[#e8a030]" />
-          borderColor = 'border-[#e8a030]/40'
-          bgColor = 'bg-[#e8a030]/5'
+          icon = <Send size={16} style={{ color: 'var(--warning)' }} />
+          borderColor = 'rgba(251,191,36,0.4)'
+          bgColor = 'rgba(251,191,36,0.06)'
           label = 'Invoice sent'
-          labelColor = 'text-[#e8a030]'
+          labelColor = 'var(--warning)'
         } else if (isReached) {
-          icon = <DollarSign size={16} className="text-[#c8a96e]" />
-          borderColor = 'border-[#c8a96e]/40'
-          bgColor = 'bg-[#c8a96e]/5'
+          icon = <DollarSign size={16} style={{ color: 'var(--accent)' }} />
+          borderColor = 'rgba(212,175,55,0.4)'
+          bgColor = 'var(--accent-dim)'
           label = 'Processing…'
-          labelColor = 'text-[#c8a96e]'
+          labelColor = 'var(--accent)'
         }
 
         return (
-          <div key={milestone} className={`rounded-xl border ${borderColor} ${bgColor} p-4`}>
+          <div
+            key={milestone}
+            className="rounded-xl p-4 transition-all"
+            style={{ border: `1px solid ${borderColor}`, background: bgColor }}
+          >
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xl font-bold text-[#f5f0e8]">{milestone}%</span>
+              <span className="text-2xl font-bold gold-text">{milestone}%</span>
               {icon}
             </div>
-            <p className="text-sm font-semibold text-[#c8a96e]">${milestoneAmount.toFixed(0)}</p>
-            <p className={`text-xs mt-1 ${labelColor}`}>{label}</p>
+            <p className="text-sm font-semibold" style={{ color: 'var(--accent)' }}>
+              ${milestoneAmount.toFixed(0)}
+            </p>
+            <p className="text-xs mt-1" style={{ color: labelColor }}>{label}</p>
             {invoice?.created_at && (
-              <p className="text-xs text-[#555] mt-1">
+              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
                 {new Date(invoice.created_at).toLocaleDateString()}
               </p>
             )}

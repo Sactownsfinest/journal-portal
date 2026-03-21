@@ -67,7 +67,7 @@ export default function SectionManager({ projectId, totalPages, existingSections
           <div className="w-full max-w-sm card">
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-semibold">Add Section</h3>
-              <button onClick={() => setOpen(false)} className="text-[#888] hover:text-[#f5f0e8]">
+              <button onClick={() => setOpen(false)} className="transition-colors hover:text-[#F8F4E3]" style={{ color: 'var(--text-muted)' }}>
                 <X size={18} />
               </button>
             </div>
@@ -112,9 +112,9 @@ export default function SectionManager({ projectId, totalPages, existingSections
                 </div>
               </div>
               {totalPages > 0 && (
-                <p className="text-xs text-[#888]">Project has {totalPages} pages.</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Project has {totalPages} pages.</p>
               )}
-              {error && <p className="text-sm text-[#e05252]">{error}</p>}
+              {error && <p className="text-sm" style={{ color: 'var(--danger)' }}>{error}</p>}
               <div className="flex gap-3 pt-1">
                 <button type="button" onClick={() => setOpen(false)} className="btn-secondary flex-1">Cancel</button>
                 <button type="submit" className="btn-primary flex-1" disabled={loading}>

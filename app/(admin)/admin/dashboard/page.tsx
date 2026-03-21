@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Plus, BookOpen, CheckCircle, Clock, DollarSign } from 'lucide-react'
+import { BookOpen, CheckCircle, Clock } from 'lucide-react'
 import CreateProjectModal from '@/components/CreateProjectModal'
 import type { Project, Invoice, Section } from '@/types'
 
@@ -18,7 +18,6 @@ export default async function AdminDashboard() {
     .eq('role', 'client')
     .order('name')
 
-  // Aggregate stats
   const totalProjects = projects?.length ?? 0
   const activeProjects = projects?.filter(p => p.status === 'in_progress' || p.status === 'ready_for_review').length ?? 0
   const completeProjects = projects?.filter(p => p.status === 'complete').length ?? 0
@@ -28,44 +27,44 @@ export default async function AdminDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#f5f0e8]">Dashboard</h1>
-          <p className="text-[#888] text-sm mt-1">Manage your journal projects</p>
+          <h1 className="text-3xl font-bold gold-text">Dashboard</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Manage your journal projects</p>
         </div>
         <CreateProjectModal clients={clients ?? []} />
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="card">
+        <div className="card-glow">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#c8a96e]/10 flex items-center justify-center">
-              <BookOpen size={18} className="text-[#c8a96e]" />
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'var(--accent-dim)' }}>
+              <BookOpen size={20} style={{ color: 'var(--accent)' }} />
             </div>
             <div>
-              <p className="text-2xl font-bold">{totalProjects}</p>
-              <p className="text-[#888] text-xs">Total Projects</p>
+              <p className="text-3xl font-bold">{totalProjects}</p>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Total Projects</p>
             </div>
           </div>
         </div>
-        <div className="card">
+        <div className="card-glow">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#e8a030]/10 flex items-center justify-center">
-              <Clock size={18} className="text-[#e8a030]" />
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'var(--violet-dim)' }}>
+              <Clock size={20} style={{ color: 'var(--violet-light)' }} />
             </div>
             <div>
-              <p className="text-2xl font-bold">{activeProjects}</p>
-              <p className="text-[#888] text-xs">In Progress</p>
+              <p className="text-3xl font-bold">{activeProjects}</p>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>In Progress</p>
             </div>
           </div>
         </div>
-        <div className="card">
+        <div className="card-glow">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#4caf84]/10 flex items-center justify-center">
-              <CheckCircle size={18} className="text-[#4caf84]" />
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(45,212,191,0.1)' }}>
+              <CheckCircle size={20} style={{ color: 'var(--success)' }} />
             </div>
             <div>
-              <p className="text-2xl font-bold">{completeProjects}</p>
-              <p className="text-[#888] text-xs">Completed</p>
+              <p className="text-3xl font-bold">{completeProjects}</p>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Completed</p>
             </div>
           </div>
         </div>
@@ -76,8 +75,8 @@ export default async function AdminDashboard() {
         <h2 className="text-lg font-semibold mb-4">All Projects</h2>
         {!projects || projects.length === 0 ? (
           <div className="card text-center py-16">
-            <BookOpen size={40} className="mx-auto text-[#333] mb-4" />
-            <p className="text-[#888]">No projects yet. Create your first one!</p>
+            <BookOpen size={40} className="mx-auto mb-4" style={{ color: 'var(--border)' }} />
+            <p style={{ color: 'var(--text-muted)' }}>No projects yet. Create your first one!</p>
           </div>
         ) : (
           <div className="grid gap-4">
@@ -109,37 +108,39 @@ async function ProjectCard({ project }: { project: Project & { profiles: { name:
   const approvalPct = totalSections > 0 ? Math.round((approvedSections / totalSections) * 100) : 0
   const paidAmount = invoices?.filter(i => i.status === 'paid').reduce((sum, i) => sum + i.amount, 0) ?? 0
 
-  const statusColors: Record<string, string> = {
-    draft: 'text-[#888] bg-[#333]/50',
-    in_progress: 'text-[#e8a030] bg-[#e8a030]/10',
-    ready_for_review: 'text-[#c8a96e] bg-[#c8a96e]/10',
-    complete: 'text-[#4caf84] bg-[#4caf84]/10',
+  const statusBadge: Record<string, { text: string; class: string }> = {
+    draft: { text: 'Draft', class: 'badge-gold' },
+    in_progress: { text: 'In Progress', class: 'badge-violet' },
+    ready_for_review: { text: 'Ready for Review', class: 'badge-gold' },
+    complete: { text: 'Complete', class: 'badge-success' },
   }
+  const badge = statusBadge[project.status] ?? { text: project.status, class: 'badge-gold' }
 
   return (
-    <div className="card hover:border-[#c8a96e]/30 transition-colors">
+    <div
+      className="card transition-all duration-200 hover:-translate-y-0.5"
+      style={{ boxShadow: '0 0 0 0 transparent' }}
+      onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 24px rgba(212,175,55,0.08)')}
+      onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 0 0 0 transparent')}
+    >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-1">
-            <h3 className="font-semibold text-[#f5f0e8] truncate">{project.title}</h3>
-            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[project.status]}`}>
-              {project.status.replace('_', ' ')}
-            </span>
+            <h3 className="font-semibold truncate" style={{ color: 'var(--text)' }}>{project.title}</h3>
+            <span className={badge.class}>{badge.text}</span>
           </div>
-          <p className="text-sm text-[#888]">Client: {project.profiles?.name ?? 'Unassigned'}</p>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            Client: {project.profiles?.name ?? 'Unassigned'}
+          </p>
 
-          {/* Approval progress bar */}
           {totalSections > 0 && (
             <div className="mt-3">
-              <div className="flex justify-between text-xs text-[#888] mb-1">
+              <div className="flex justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
                 <span>Approval progress</span>
                 <span>{approvedSections}/{totalSections} sections ({approvalPct}%)</span>
               </div>
-              <div className="h-1.5 bg-[#333] rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[#c8a96e] rounded-full transition-all duration-500"
-                  style={{ width: `${approvalPct}%` }}
-                />
+              <div className="progress-bar">
+                <div className="progress-fill" style={{ width: `${approvalPct}%` }} />
               </div>
             </div>
           )}
@@ -147,11 +148,11 @@ async function ProjectCard({ project }: { project: Project & { profiles: { name:
 
         <div className="flex flex-col items-end gap-2 shrink-0">
           <div className="text-right">
-            <p className="text-sm text-[#888]">Total</p>
-            <p className="font-semibold text-[#c8a96e]">${project.total_price.toLocaleString()}</p>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Total</p>
+            <p className="font-bold text-lg gold-text">${project.total_price.toLocaleString()}</p>
           </div>
           {paidAmount > 0 && (
-            <p className="text-xs text-[#4caf84]">${paidAmount.toLocaleString()} paid</p>
+            <p className="text-xs" style={{ color: 'var(--success)' }}>${paidAmount.toLocaleString()} paid</p>
           )}
           <div className="flex gap-2 mt-1">
             <Link href={`/admin/projects/${project.id}/builder`} className="btn-secondary text-xs px-3 py-1.5">

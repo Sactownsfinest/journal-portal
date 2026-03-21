@@ -40,13 +40,13 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-[#888] text-sm mb-2">
-            <Link href="/admin/dashboard" className="hover:text-[#c8a96e]">Dashboard</Link>
+          <div className="flex items-center gap-2 text-sm mb-2" style={{ color: 'var(--text-muted)' }}>
+            <Link href="/admin/dashboard" className="hover:text-[#D4AF37] transition-colors">Dashboard</Link>
             <span>/</span>
-            <span className="text-[#f5f0e8]">{project.title}</span>
+            <span style={{ color: 'var(--text)' }}>{project.title}</span>
           </div>
-          <h1 className="text-2xl font-bold">{project.title}</h1>
-          <p className="text-[#888] text-sm mt-1">
+          <h1 className="text-3xl font-bold gold-text">{project.title}</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
             Client: {project.profiles?.name ?? 'Unassigned'} {project.profiles?.email ? `(${project.profiles.email})` : ''}
           </p>
         </div>
@@ -72,19 +72,19 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
       {/* Stats row */}
       <div className="grid grid-cols-4 gap-4">
         {[
-          { label: 'Pages', value: totalPages, icon: BookOpen, color: 'text-[#c8a96e]', bg: 'bg-[#c8a96e]/10' },
-          { label: 'Sections', value: totalSections, icon: Clock, color: 'text-[#888]', bg: 'bg-[#333]/50' },
-          { label: 'Approved', value: approvedSections, icon: CheckCircle, color: 'text-[#4caf84]', bg: 'bg-[#4caf84]/10' },
-          { label: 'Rejected', value: rejectedSections, icon: XCircle, color: 'text-[#e05252]', bg: 'bg-[#e05252]/10' },
+          { label: 'Pages', value: totalPages, icon: BookOpen, color: 'var(--accent)', bg: 'var(--accent-dim)' },
+          { label: 'Sections', value: totalSections, icon: Clock, color: 'var(--text-muted)', bg: 'rgba(42,74,107,0.4)' },
+          { label: 'Approved', value: approvedSections, icon: CheckCircle, color: 'var(--success)', bg: 'rgba(45,212,191,0.1)' },
+          { label: 'Rejected', value: rejectedSections, icon: XCircle, color: 'var(--danger)', bg: 'rgba(248,113,113,0.1)' },
         ].map(stat => (
           <div key={stat.label} className="card">
             <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-lg ${stat.bg} flex items-center justify-center`}>
-                <stat.icon size={18} className={stat.color} />
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: stat.bg }}>
+                <stat.icon size={20} style={{ color: stat.color }} />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stat.value}</p>
-                <p className="text-[#888] text-xs">{stat.label}</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{stat.label}</p>
               </div>
             </div>
           </div>
@@ -92,21 +92,23 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
       </div>
 
       {/* Approval progress */}
-      <div className="card">
+      <div className="card-glow">
         <div className="flex justify-between items-center mb-3">
-          <h2 className="font-semibold">Overall Approval Progress</h2>
-          <span className="text-[#c8a96e] font-bold text-lg">{approvalPct}%</span>
+          <h2 className="font-semibold text-lg">Overall Approval Progress</h2>
+          <span className="font-bold text-2xl gold-text">{approvalPct}%</span>
         </div>
-        <div className="h-3 bg-[#333] rounded-full overflow-hidden">
+        <div className="progress-bar h-4">
           <div
             className="h-full rounded-full transition-all duration-700"
             style={{
               width: `${approvalPct}%`,
-              background: approvalPct >= 100 ? '#4caf84' : 'linear-gradient(90deg, #c8a96e, #e8c98e)',
+              background: approvalPct >= 100
+                ? 'var(--success)'
+                : 'linear-gradient(90deg, #D4AF37, #7B2FBE)',
             }}
           />
         </div>
-        <div className="flex justify-between mt-2 text-xs text-[#888]">
+        <div className="flex justify-between mt-3 text-xs" style={{ color: 'var(--text-muted)' }}>
           <span>{approvedSections} of {totalSections} sections approved</span>
           <ProjectStatusUpdater projectId={params.id} currentStatus={project.status} />
         </div>
@@ -129,7 +131,7 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
           <SectionManager projectId={params.id} totalPages={totalPages} existingSections={sections ?? []} />
         </div>
         {!sections || sections.length === 0 ? (
-          <div className="card text-center py-10 text-[#888]">
+          <div className="card text-center py-10" style={{ color: 'var(--text-muted)' }}>
             No sections yet. Add pages in the builder, then create sections to send for client review.
           </div>
         ) : (
@@ -146,9 +148,9 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
 
 function SectionRow({ section }: { section: Section }) {
   const statusConfig = {
-    pending: { color: 'text-[#888]', bg: 'bg-[#333]/50', label: 'Pending Review' },
-    approved: { color: 'text-[#4caf84]', bg: 'bg-[#4caf84]/10', label: 'Approved' },
-    rejected: { color: 'text-[#e05252]', bg: 'bg-[#e05252]/10', label: 'Rejected' },
+    pending: { color: 'var(--text-muted)', bg: 'rgba(42,74,107,0.4)', label: 'Pending Review', badgeClass: '' },
+    approved: { color: 'var(--success)', bg: 'rgba(45,212,191,0.1)', label: 'Approved', badgeClass: 'badge-success' },
+    rejected: { color: 'var(--danger)', bg: 'rgba(248,113,113,0.1)', label: 'Rejected', badgeClass: 'badge-danger' },
   }
   const s = statusConfig[section.status]
 
@@ -158,17 +160,31 @@ function SectionRow({ section }: { section: Section }) {
         <div>
           <div className="flex items-center gap-2">
             <h3 className="font-medium">{section.name}</h3>
-            <span className={`text-xs px-2 py-0.5 rounded-full ${s.bg} ${s.color}`}>{s.label}</span>
+            <span
+              className="text-xs px-2 py-0.5 rounded-full font-medium"
+              style={{ color: s.color, background: s.bg }}
+            >
+              {s.label}
+            </span>
           </div>
-          <p className="text-sm text-[#888] mt-0.5">Pages {section.page_start}–{section.page_end}</p>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
+            Pages {section.page_start}–{section.page_end}
+          </p>
           {section.client_notes && (
-            <p className="text-sm text-[#e8a030] mt-2 bg-[#e8a030]/10 border border-[#e8a030]/20 rounded-lg px-3 py-2">
-              Client note: "{section.client_notes}"
+            <p
+              className="text-sm mt-2 rounded-lg px-3 py-2"
+              style={{
+                color: 'var(--warning)',
+                background: 'rgba(251,191,36,0.08)',
+                border: '1px solid rgba(251,191,36,0.2)',
+              }}
+            >
+              Client note: &ldquo;{section.client_notes}&rdquo;
             </p>
           )}
         </div>
         {section.reviewed_at && (
-          <p className="text-xs text-[#888] shrink-0">
+          <p className="text-xs shrink-0" style={{ color: 'var(--text-muted)' }}>
             {new Date(section.reviewed_at).toLocaleDateString()}
           </p>
         )}

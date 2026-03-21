@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import SortablePageItem from './SortablePageItem'
 import PageCanvas from './PageCanvas'
 import TemplateSelector from './TemplateSelector'
@@ -19,7 +18,6 @@ interface Props {
 }
 
 export default function JournalBuilder({ projectId, projectTitle, initialPages }: Props) {
-  const router = useRouter()
   const supabase = createClient()
   const [pages, setPages] = useState<Page[]>(initialPages)
   const [selectedPageId, setSelectedPageId] = useState<string | null>(pages[0]?.id ?? null)
@@ -56,18 +54,11 @@ export default function JournalBuilder({ projectId, projectTitle, initialPages }
 
   async function deletePage(pageId: string) {
     await supabase.from('pages').delete().eq('id', pageId)
-    setPages(prev => {
-      const updated = prev.filter(p => p.id !== pageId)
-      // Re-index
-      return updated.map((p, i) => ({ ...p, order_index: i }))
-    })
-    if (selectedPageId === pageId) {
-      const remaining = pages.filter(p => p.id !== pageId)
-      setSelectedPageId(remaining[0]?.id ?? null)
-    }
-    // Update order_index in DB
-    const updated = pages.filter(p => p.id !== pageId).map((p, i) => ({ id: p.id, order_index: i }))
-    for (const { id, order_index } of updated) {
+    const remaining = pages.filter(p => p.id !== pageId)
+    const reindexed = remaining.map((p, i) => ({ ...p, order_index: i }))
+    setPages(reindexed)
+    if (selectedPageId === pageId) setSelectedPageId(reindexed[0]?.id ?? null)
+    for (const { id, order_index } of reindexed) {
       await supabase.from('pages').update({ order_index }).eq('id', id)
     }
   }
@@ -82,13 +73,10 @@ export default function JournalBuilder({ projectId, projectTitle, initialPages }
   async function handleDragEnd(event: any) {
     const { active, over } = event
     if (!over || active.id === over.id) return
-
     const oldIndex = pages.findIndex(p => p.id === active.id)
     const newIndex = pages.findIndex(p => p.id === over.id)
     const reordered = arrayMove(pages, oldIndex, newIndex).map((p, i) => ({ ...p, order_index: i }))
     setPages(reordered)
-
-    // Persist order
     for (const { id, order_index } of reordered) {
       await supabase.from('pages').update({ order_index }).eq('id', id)
     }
@@ -96,18 +84,22 @@ export default function JournalBuilder({ projectId, projectTitle, initialPages }
 
   return (
     <div className="flex h-[calc(100vh-64px)] overflow-hidden -mx-4 -my-8">
-      {/* Sidebar — page list */}
-      <aside className="w-56 border-r border-[#333] bg-[#1a1a1a] flex flex-col">
-        <div className="p-3 border-b border-[#333]">
+      {/* Sidebar */}
+      <aside
+        className="w-56 flex flex-col"
+        style={{ borderRight: '1px solid var(--border)', background: 'var(--surface)' }}
+      >
+        <div className="p-3" style={{ borderBottom: '1px solid var(--border)' }}>
           <Link
             href={`/admin/projects/${projectId}`}
-            className="flex items-center gap-1.5 text-xs text-[#888] hover:text-[#c8a96e] mb-2"
+            className="flex items-center gap-1.5 text-xs mb-2 transition-colors hover:text-[#D4AF37]"
+            style={{ color: 'var(--text-muted)' }}
           >
             <ArrowLeft size={12} />
             Back to overview
           </Link>
-          <p className="text-sm font-semibold text-[#f5f0e8] truncate">{projectTitle}</p>
-          <p className="text-xs text-[#888]">{pages.length} pages</p>
+          <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{projectTitle}</p>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{pages.length} pages</p>
         </div>
 
         <div className="flex-1 overflow-y-auto p-2">
@@ -127,7 +119,7 @@ export default function JournalBuilder({ projectId, projectTitle, initialPages }
           </DndContext>
         </div>
 
-        <div className="p-2 border-t border-[#333] space-y-1.5">
+        <div className="p-2 space-y-1.5" style={{ borderTop: '1px solid var(--border)' }}>
           <button
             onClick={() => setShowTemplateSelector(true)}
             className="w-full flex items-center justify-center gap-1.5 btn-primary text-xs py-2"
@@ -147,9 +139,16 @@ export default function JournalBuilder({ projectId, projectTitle, initialPages }
       </aside>
 
       {/* Main canvas */}
-      <main className="flex-1 overflow-y-auto bg-[#0f0f0f]">
+      <main className="flex-1 overflow-y-auto relative" style={{ background: 'var(--bg)' }}>
         {saving && (
-          <div className="absolute top-4 right-4 text-xs text-[#888] bg-[#1a1a1a] border border-[#333] px-3 py-1.5 rounded-full z-10">
+          <div
+            className="absolute top-4 right-4 text-xs px-3 py-1.5 rounded-full z-10"
+            style={{
+              color: 'var(--text-muted)',
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+            }}
+          >
             Saving…
           </div>
         )}
@@ -160,7 +159,7 @@ export default function JournalBuilder({ projectId, projectTitle, initialPages }
             onContentChange={(content) => updatePageContent(selectedPage.id, content)}
           />
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center h-full text-[#888]">
+          <div className="flex flex-col items-center justify-center h-full" style={{ color: 'var(--text-muted)' }}>
             <p className="text-lg mb-4">No pages yet</p>
             <button onClick={() => setShowTemplateSelector(true)} className="btn-primary flex items-center gap-2">
               <Plus size={16} />
@@ -170,7 +169,6 @@ export default function JournalBuilder({ projectId, projectTitle, initialPages }
         )}
       </main>
 
-      {/* Template selector overlay */}
       {showTemplateSelector && (
         <TemplateSelector
           onSelect={addPage}
