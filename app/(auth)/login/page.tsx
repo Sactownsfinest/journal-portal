@@ -26,7 +26,6 @@ export default function LoginPage() {
       return
     }
 
-    // Fetch role and redirect
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -48,33 +47,64 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      {/* Background glow effect */}
+    <div
+      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
+      style={{
+        backgroundImage: "url('/login-bg.jpg')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        /* CSS fallback if no image is provided */
+        backgroundColor: '#F5EFE3',
+      }}
+    >
+      {/* Soft overlay to ensure readability */}
       <div
-        className="fixed inset-0 pointer-events-none"
+        className="absolute inset-0"
         style={{
-          background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(212,175,55,0.08) 0%, transparent 70%)',
+          background: 'linear-gradient(135deg, rgba(255,248,235,0.35) 0%, rgba(255,252,245,0.25) 100%)',
         }}
       />
 
-      <div className="w-full max-w-sm relative">
-        {/* Logo / Brand */}
-        <div className="text-center mb-10">
+      <div className="w-full max-w-sm relative z-10">
+        {/* Logo */}
+        <div className="text-center mb-8">
           <div
-            className="inline-flex w-20 h-20 rounded-full items-center justify-center mb-5"
+            className="inline-flex w-16 h-16 rounded-full items-center justify-center mb-4"
             style={{
-              background: 'var(--accent-dim)',
-              border: '1px solid rgba(212,175,55,0.3)',
-              boxShadow: '0 0 40px rgba(212,175,55,0.15)',
+              background: 'rgba(255,255,255,0.6)',
+              border: '1.5px solid rgba(184,131,42,0.35)',
+              backdropFilter: 'blur(8px)',
             }}
           >
-            <Sparkles size={32} style={{ color: 'var(--accent)' }} />
+            <Sparkles size={26} style={{ color: '#B8832A' }} />
           </div>
-          <h1 className="text-3xl font-bold gold-text mb-1">Journal Portal</h1>
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Your custom journal workspace</p>
+          <h1
+            className="text-3xl font-bold mb-1"
+            style={{
+              background: 'linear-gradient(135deg, #8A5E0A, #C9922A)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              textShadow: 'none',
+            }}
+          >
+            Journal Portal
+          </h1>
+          <p className="text-sm" style={{ color: '#7A6A50' }}>Your custom journal workspace</p>
         </div>
 
-        <form onSubmit={handleLogin} className="card-glow space-y-5">
+        {/* Card */}
+        <form
+          onSubmit={handleLogin}
+          className="space-y-5 rounded-2xl px-8 py-8"
+          style={{
+            background: 'rgba(255,255,255,0.82)',
+            border: '1.5px solid rgba(255,255,255,0.95)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            boxShadow: '0 8px 40px rgba(100,70,20,0.12), 0 2px 8px rgba(100,70,20,0.08)',
+          }}
+        >
           <div>
             <label className="label">Email</label>
             <input
@@ -101,9 +131,7 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <p className="text-sm badge-danger px-4 py-2 rounded-lg">
-              {error}
-            </p>
+            <p className="text-sm badge-danger px-4 py-2 rounded-lg">{error}</p>
           )}
 
           <button type="submit" className="btn-primary w-full text-base py-3" disabled={loading}>
