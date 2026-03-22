@@ -28,14 +28,15 @@ export default function AssignClientPanel({ projectId, currentClientId, currentC
 
   // New client inline
   const [showNew, setShowNew] = useState(false)
-  const [newClient, setNewClient] = useState({ name: '', email: '', password: '' })
+  const [newClient, setNewClient] = useState({ name: '', email: '' })
   const [creatingClient, setCreatingClient] = useState(false)
   const [clientError, setClientError] = useState('')
+  const [inviteSent, setInviteSent] = useState(false)
   const [allClients, setAllClients] = useState<Client[]>(clients)
 
   async function handleCreateClient() {
-    if (!newClient.name || !newClient.email || !newClient.password) {
-      setClientError('All fields required')
+    if (!newClient.name || !newClient.email) {
+      setClientError('Name and email are required')
       return
     }
     setCreatingClient(true)
@@ -50,7 +51,8 @@ export default function AssignClientPanel({ projectId, currentClientId, currentC
     const created: Client = { id: data.id, name: data.name, email: data.email }
     setAllClients(prev => [...prev, created])
     setSelectedId(created.id)
-    setNewClient({ name: '', email: '', password: '' })
+    setNewClient({ name: '', email: '' })
+    setInviteSent(true)
     setShowNew(false)
     setCreatingClient(false)
   }
@@ -131,10 +133,10 @@ export default function AssignClientPanel({ projectId, currentClientId, currentC
           <p className="text-xs font-semibold" style={{ color: 'var(--accent)' }}>New Client Account</p>
           <input className="input" placeholder="Full name" value={newClient.name} onChange={e => setNewClient(n => ({ ...n, name: e.target.value }))} />
           <input className="input" type="email" placeholder="Email" value={newClient.email} onChange={e => setNewClient(n => ({ ...n, email: e.target.value }))} />
-          <input className="input" type="password" placeholder="Temporary password" value={newClient.password} onChange={e => setNewClient(n => ({ ...n, password: e.target.value }))} />
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>✉️ An invite email will be sent so they can set their own password.</p>
           {clientError && <p className="text-xs" style={{ color: 'var(--danger)' }}>{clientError}</p>}
           <button type="button" onClick={handleCreateClient} disabled={creatingClient} className="btn-primary w-full text-sm py-2">
-            {creatingClient ? 'Creating…' : 'Create & Select'}
+            {creatingClient ? 'Sending Invite…' : 'Send Invite & Select'}
           </button>
         </div>
       )}
@@ -142,6 +144,7 @@ export default function AssignClientPanel({ projectId, currentClientId, currentC
       {selectedId && !showNew && (
         <p className="text-xs" style={{ color: 'var(--success)' }}>
           ✓ {allClients.find(c => c.id === selectedId)?.name} will be assigned
+          {inviteSent && ' — invite email sent'}
         </p>
       )}
 
