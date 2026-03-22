@@ -73,7 +73,7 @@ export default async function ClientProjectPage({
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold gold-text">{project.title}</h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Your custom 150-page journal</p>
+        <p className="text-sm mt-1" style={{ color: 'var(--text)' }}>Your custom 150-page journal</p>
       </div>
 
       {/* Deposit success banner */}
@@ -104,8 +104,8 @@ export default async function ClientProjectPage({
           </div>
           <div className="flex items-center justify-between gap-6 flex-wrap">
             <div>
-              <p className="font-medium mb-1">Submit your deposit to kick off your journal</p>
-              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+              <p className="font-medium mb-1" style={{ color: 'var(--text)' }}>Submit your deposit to kick off your journal</p>
+              <p className="text-sm" style={{ color: 'var(--text)' }}>
                 A deposit of{' '}
                 <span style={{ color: 'var(--accent)' }}>${engagementLetter.deposit_amount.toLocaleString()}</span>{' '}
                 is required to begin work.
