@@ -131,6 +131,8 @@ export default async function ClientProjectPage({
           totalSections={totalSections}
           invoices={invoices ?? []}
           totalPrice={project.total_price}
+          depositPaid={!!(engagementLetter?.stripe_deposit_invoice_id)}
+          depositAmount={engagementLetter?.deposit_amount ?? 0}
         />
       )}
 
