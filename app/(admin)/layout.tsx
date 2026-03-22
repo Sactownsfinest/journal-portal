@@ -17,35 +17,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (profile?.role !== 'admin') redirect('/login')
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ position: 'relative' }}>
-      {/* Blurred background image */}
-      <div
-        style={{
-          position: 'fixed',
-          inset: 0,
-          backgroundImage: "url('/dashboard-bg.jpg')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          filter: 'blur(6px)',
-          transform: 'scale(1.04)',
-          zIndex: 0,
-        }}
-      />
-      {/* Soft warm overlay so content stays readable */}
-      <div
-        style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(250,248,243,0.72)',
-          zIndex: 1,
-        }}
-      />
-      <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <AdminNav adminName={profile.name} />
-        <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-8">
-          {children}
-        </main>
-      </div>
+    <div className="min-h-screen flex flex-col">
+      <AdminNav adminName={profile.name} />
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-8">
+        {children}
+      </main>
     </div>
   )
 }
