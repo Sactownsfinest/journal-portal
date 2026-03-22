@@ -1,4 +1,5 @@
 import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { stripe } from '@/lib/stripe'
 import { notFound, redirect } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import ApprovalPanel from '@/components/approval/ApprovalPanel'
@@ -37,18 +38,29 @@ export default async function ClientProjectPage({
 
   if (!project) notFound()
 
-  // If Stripe redirected back with ?deposit=success, proactively mark the deposit as done
-  // in case the webhook hasn't fired yet or was delayed.
-  if (searchParams.deposit === 'success' && project.status === 'awaiting_deposit') {
-    const service = await createServiceClient()
-    await Promise.all([
-      service.from('projects').update({ status: 'in_progress' }).eq('id', params.id),
-      service.from('engagement_letters')
-        .update({ stripe_deposit_invoice_id: 'checkout_success' })
-        .eq('project_id', params.id)
-        .is('stripe_deposit_invoice_id', null),
-    ])
-    project.status = 'in_progress'
+  // If project is stuck in awaiting_deposit, check Stripe for a completed session.
+  // This handles webhook delays or failures (e.g. redirect logged user out before webhook fired).
+  if (project.status === 'awaiting_deposit') {
+    try {
+      const sessions = await stripe.checkout.sessions.search({
+        query: `metadata['project_id']:'${params.id}' AND metadata['type']:'deposit' AND status:'complete'`,
+        limit: 1,
+      })
+      if (sessions.data.length > 0) {
+        const paymentIntent = sessions.data[0].payment_intent as string
+        const service = await createServiceClient()
+        await Promise.all([
+          service.from('projects').update({ status: 'in_progress' }).eq('id', params.id),
+          service.from('engagement_letters')
+            .update({ stripe_deposit_invoice_id: paymentIntent || 'checkout_complete' })
+            .eq('project_id', params.id)
+            .is('stripe_deposit_invoice_id', null),
+        ])
+        project.status = 'in_progress'
+      }
+    } catch {
+      // Stripe check failed — continue showing current state
+    }
   }
 
   const [pagesRes, sectionsRes, invoicesRes, letterRes, assetsRes] = await Promise.all([
