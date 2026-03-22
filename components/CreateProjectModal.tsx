@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Plus, X } from 'lucide-react'
+import { Plus, X, UserPlus, ChevronDown } from 'lucide-react'
 
 interface Client {
   id: string
@@ -11,23 +11,57 @@ interface Client {
   email: string
 }
 
-export default function CreateProjectModal({ clients }: { clients: Client[] }) {
+export default function CreateProjectModal({ clients: initialClients }: { clients: Client[] }) {
   const router = useRouter()
+  const supabase = createClient()
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [form, setForm] = useState({
-    title: '',
-    client_id: '',
-    total_price: '',
-  })
+  const [clients, setClients] = useState<Client[]>(initialClients)
+
+  // New client inline form
+  const [showNewClient, setShowNewClient] = useState(false)
+  const [newClient, setNewClient] = useState({ name: '', email: '', password: '' })
+  const [creatingClient, setCreatingClient] = useState(false)
+  const [clientError, setClientError] = useState('')
+
+  const [form, setForm] = useState({ title: '', client_id: '', total_price: '' })
+
+  async function handleCreateClient() {
+    if (!newClient.name || !newClient.email || !newClient.password) {
+      setClientError('All fields required')
+      return
+    }
+    setCreatingClient(true)
+    setClientError('')
+
+    const res = await fetch('/api/admin/create-client', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newClient),
+    })
+    const data = await res.json()
+
+    if (!res.ok) {
+      setClientError(data.error ?? 'Failed to create client')
+      setCreatingClient(false)
+      return
+    }
+
+    // Add to local list and auto-select
+    const created: Client = { id: data.id, name: data.name, email: data.email }
+    setClients(prev => [...prev, created])
+    setForm(f => ({ ...f, client_id: created.id }))
+    setNewClient({ name: '', email: '', password: '' })
+    setShowNewClient(false)
+    setCreatingClient(false)
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
     setLoading(true)
 
-    const supabase = createClient()
     const { data, error: err } = await supabase
       .from('projects')
       .insert({
@@ -50,6 +84,15 @@ export default function CreateProjectModal({ clients }: { clients: Client[] }) {
     router.push(`/admin/projects/${data.id}`)
   }
 
+  function handleClose() {
+    setOpen(false)
+    setError('')
+    setClientError('')
+    setShowNewClient(false)
+    setForm({ title: '', client_id: '', total_price: '' })
+    setNewClient({ name: '', email: '', password: '' })
+  }
+
   return (
     <>
       <button onClick={() => setOpen(true)} className="btn-primary flex items-center gap-2">
@@ -59,15 +102,16 @@ export default function CreateProjectModal({ clients }: { clients: Client[] }) {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-md card">
+          <div className="w-full max-w-lg card overflow-y-auto max-h-[90vh]">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold">New Journal Project</h2>
-              <button onClick={() => setOpen(false)} className="transition-colors hover:text-[#F8F4E3]" style={{ color: 'var(--text-muted)' }}>
+              <h2 className="text-xl font-bold gold-text">New Journal Project</h2>
+              <button onClick={handleClose} style={{ color: 'var(--text-muted)' }}>
                 <X size={20} />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Title */}
               <div>
                 <label className="label">Journal Title</label>
                 <input
@@ -79,20 +123,80 @@ export default function CreateProjectModal({ clients }: { clients: Client[] }) {
                 />
               </div>
 
+              {/* Client picker */}
               <div>
-                <label className="label">Client</label>
-                <select
-                  className="input"
-                  value={form.client_id}
-                  onChange={e => setForm(f => ({ ...f, client_id: e.target.value }))}
-                >
-                  <option value="">— Assign later —</option>
-                  {clients.map(c => (
-                    <option key={c.id} value={c.id}>{c.name} ({c.email})</option>
-                  ))}
-                </select>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="label mb-0">Client</label>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewClient(v => !v)}
+                    className="flex items-center gap-1 text-xs font-semibold transition-colors"
+                    style={{ color: 'var(--accent)' }}
+                  >
+                    <UserPlus size={13} />
+                    {showNewClient ? 'Cancel' : 'Create New Client'}
+                  </button>
+                </div>
+
+                {!showNewClient ? (
+                  <select
+                    className="input"
+                    value={form.client_id}
+                    onChange={e => setForm(f => ({ ...f, client_id: e.target.value }))}
+                  >
+                    <option value="">— Assign later —</option>
+                    {clients.map(c => (
+                      <option key={c.id} value={c.id}>{c.name} ({c.email})</option>
+                    ))}
+                  </select>
+                ) : (
+                  <div
+                    className="rounded-xl p-4 space-y-3"
+                    style={{ background: 'var(--accent-dim)', border: '1.5px solid rgba(184,131,42,0.2)' }}
+                  >
+                    <p className="text-xs font-semibold" style={{ color: 'var(--accent)' }}>Create Client Account</p>
+                    <input
+                      className="input"
+                      placeholder="Full name"
+                      value={newClient.name}
+                      onChange={e => setNewClient(n => ({ ...n, name: e.target.value }))}
+                    />
+                    <input
+                      className="input"
+                      type="email"
+                      placeholder="Email address"
+                      value={newClient.email}
+                      onChange={e => setNewClient(n => ({ ...n, email: e.target.value }))}
+                    />
+                    <input
+                      className="input"
+                      type="password"
+                      placeholder="Temporary password"
+                      value={newClient.password}
+                      onChange={e => setNewClient(n => ({ ...n, password: e.target.value }))}
+                    />
+                    {clientError && (
+                      <p className="text-xs" style={{ color: 'var(--danger)' }}>{clientError}</p>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleCreateClient}
+                      disabled={creatingClient}
+                      className="btn-primary w-full text-sm py-2"
+                    >
+                      {creatingClient ? 'Creating…' : 'Create & Select Client'}
+                    </button>
+                  </div>
+                )}
+
+                {form.client_id && (
+                  <p className="text-xs mt-1.5" style={{ color: 'var(--success)' }}>
+                    ✓ {clients.find(c => c.id === form.client_id)?.name} selected
+                  </p>
+                )}
               </div>
 
+              {/* Price */}
               <div>
                 <label className="label">Total Project Price ($)</label>
                 <input
@@ -106,18 +210,14 @@ export default function CreateProjectModal({ clients }: { clients: Client[] }) {
                   required
                 />
                 <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                  Client will be invoiced 25% (${ form.total_price ? (parseFloat(form.total_price) * 0.25).toFixed(2) : '0.00' }) at each approval milestone.
+                  Client invoiced 25% (${form.total_price ? (parseFloat(form.total_price) * 0.25).toFixed(2) : '0.00'}) at each milestone.
                 </p>
               </div>
 
-              {error && (
-                <p className="text-sm" style={{ color: 'var(--danger)' }}>{error}</p>
-              )}
+              {error && <p className="text-sm" style={{ color: 'var(--danger)' }}>{error}</p>}
 
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setOpen(false)} className="btn-secondary flex-1">
-                  Cancel
-                </button>
+                <button type="button" onClick={handleClose} className="btn-secondary flex-1">Cancel</button>
                 <button type="submit" className="btn-primary flex-1" disabled={loading}>
                   {loading ? 'Creating…' : 'Create Project'}
                 </button>

@@ -7,6 +7,7 @@ import ProjectStatusUpdater from '@/components/ProjectStatusUpdater'
 import SectionManager from '@/components/approval/SectionManager'
 import EngagementLetterEditor from '@/components/EngagementLetterEditor'
 import ProjectAssets from '@/components/ProjectAssets'
+import AssignClientPanel from '@/components/AssignClientPanel'
 import type { Section, Invoice, Page, Project, EngagementLetter } from '@/types'
 
 export default async function AdminProjectPage({ params }: { params: { id: string } }) {
@@ -19,6 +20,12 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
     .single() as { data: (Project & { profiles: { name: string; email: string } }) | null }
 
   if (!project) notFound()
+
+  const { data: allClients } = await supabase
+    .from('profiles')
+    .select('id, name, email')
+    .eq('role', 'client')
+    .order('name')
 
   const [pagesRes, sectionsRes, invoicesRes, letterRes, assetsRes] = await Promise.all([
     supabase.from('pages').select('id, order_index, template_type, status').eq('project_id', params.id).order('order_index'),
@@ -52,9 +59,14 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
             <span style={{ color: 'var(--text)' }}>{project.title}</span>
           </div>
           <h1 className="text-3xl font-bold gold-text">{project.title}</h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-            Client: {project.profiles?.name ?? 'Unassigned'} {project.profiles?.email ? `(${project.profiles.email})` : ''}
-          </p>
+          <div className="mt-2">
+            <AssignClientPanel
+              projectId={params.id}
+              currentClientId={project.client_id ?? null}
+              currentClientName={project.profiles?.name ?? null}
+              clients={allClients ?? []}
+            />
+          </div>
         </div>
 
         <div className="flex gap-2 shrink-0">
