@@ -21,15 +21,15 @@ export default function CreateProjectModal({ clients: initialClients }: { client
 
   // New client inline form
   const [showNewClient, setShowNewClient] = useState(false)
-  const [newClient, setNewClient] = useState({ name: '', email: '', password: '' })
+  const [newClient, setNewClient] = useState({ name: '', email: '' })
   const [creatingClient, setCreatingClient] = useState(false)
   const [clientError, setClientError] = useState('')
 
   const [form, setForm] = useState({ title: '', client_id: '', total_price: '' })
 
   async function handleCreateClient() {
-    if (!newClient.name || !newClient.email || !newClient.password) {
-      setClientError('All fields required')
+    if (!newClient.name || !newClient.email) {
+      setClientError('Name and email required')
       return
     }
     setCreatingClient(true)
@@ -52,7 +52,7 @@ export default function CreateProjectModal({ clients: initialClients }: { client
     const created: Client = { id: data.id, name: data.name, email: data.email }
     setClients(prev => [...prev, created])
     setForm(f => ({ ...f, client_id: created.id }))
-    setNewClient({ name: '', email: '', password: '' })
+    setNewClient({ name: '', email: '' })
     setShowNewClient(false)
     setCreatingClient(false)
   }
@@ -90,7 +90,7 @@ export default function CreateProjectModal({ clients: initialClients }: { client
     setClientError('')
     setShowNewClient(false)
     setForm({ title: '', client_id: '', total_price: '' })
-    setNewClient({ name: '', email: '', password: '' })
+    setNewClient({ name: '', email: '' })
   }
 
   return (
@@ -154,7 +154,7 @@ export default function CreateProjectModal({ clients: initialClients }: { client
                     className="rounded-xl p-4 space-y-3"
                     style={{ background: 'var(--accent-dim)', border: '1.5px solid rgba(184,131,42,0.2)' }}
                   >
-                    <p className="text-xs font-semibold" style={{ color: 'var(--accent)' }}>Create Client Account</p>
+                    <p className="text-xs font-semibold" style={{ color: 'var(--accent)' }}>Invite Client</p>
                     <input
                       className="input"
                       placeholder="Full name"
@@ -168,13 +168,9 @@ export default function CreateProjectModal({ clients: initialClients }: { client
                       value={newClient.email}
                       onChange={e => setNewClient(n => ({ ...n, email: e.target.value }))}
                     />
-                    <input
-                      className="input"
-                      type="password"
-                      placeholder="Temporary password"
-                      value={newClient.password}
-                      onChange={e => setNewClient(n => ({ ...n, password: e.target.value }))}
-                    />
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                      ✉️ An invite email will be sent so they can set their own password.
+                    </p>
                     {clientError && (
                       <p className="text-xs" style={{ color: 'var(--danger)' }}>{clientError}</p>
                     )}
@@ -184,7 +180,7 @@ export default function CreateProjectModal({ clients: initialClients }: { client
                       disabled={creatingClient}
                       className="btn-primary w-full text-sm py-2"
                     >
-                      {creatingClient ? 'Creating…' : 'Create & Select Client'}
+                      {creatingClient ? 'Sending invite…' : 'Send Invite & Select Client'}
                     </button>
                   </div>
                 )}
