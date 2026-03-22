@@ -65,7 +65,7 @@ export default function EngagementLetterGate({ letter, projectId, projectTitle, 
           {letter.deposit_amount > 0 && (
             <div
               className="rounded-2xl overflow-hidden"
-              style={{ border: '1px solid rgba(212,175,55,0.3)', background: 'linear-gradient(135deg, rgba(30,52,84,0.9), rgba(26,46,69,0.9))' }}
+              style={{ border: '1px solid rgba(212,175,55,0.3)', background: 'var(--card)' }}
             >
               <div
                 className="px-6 py-4"
