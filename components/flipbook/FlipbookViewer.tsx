@@ -193,11 +193,11 @@ export default function FlipbookViewer({ pages }: Props) {
       >
         {displayPages.map((page, idx) =>
           page ? (
-            <div key={page.id}>
+            <div key={page.id} style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
               <FlipPage page={page} pageNumber={idx + 1} />
             </div>
           ) : (
-            <div key="blank-end" style={{ background: '#fdf8f0', width: '100%', height: '100%' }} />
+            <div key="blank-end" style={{ background: '#fdf8f0', width: '100%', height: '100%', overflow: 'hidden' }} />
           )
         )}
       </HTMLFlipBook>
