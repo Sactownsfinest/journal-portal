@@ -38,7 +38,31 @@ export type TemplateType = 'cover' | 'full_image' | 'text_image' | 'prompt_lines
 
 export type PageStatus = 'draft' | 'pending_review' | 'approved' | 'rejected'
 
+export type ElementType = 'heading' | 'body' | 'image' | 'lines' | 'scripture' | 'prompt'
+
+export interface CanvasElement {
+  id: string
+  type: ElementType
+  // Position as % of canvas dimensions
+  x: number
+  y: number
+  w: number
+  h: number
+  text?: string
+  image_url?: string
+  lines_count?: number
+  font_family?: string
+  font_size?: number
+  text_color?: string
+  font_weight?: 'normal' | 'bold'
+  text_align?: 'left' | 'center' | 'right'
+  bg_color?: string
+  line_color?: string
+  italic?: boolean
+}
+
 export interface PageContent {
+  // Legacy template fields
   image_url?: string
   title_text?: string
   subtitle_text?: string
@@ -46,6 +70,9 @@ export interface PageContent {
   prompt_text?: string
   lines_count?: number
   image_side?: 'left' | 'right'
+  // Free-form canvas fields
+  bg_color?: string
+  elements?: CanvasElement[]
 }
 
 export interface Page {

@@ -8,6 +8,7 @@ import DepositCheckoutButton from '@/components/DepositCheckoutButton'
 import JournalProgressBar from '@/components/JournalProgressBar'
 import { CheckCircle, Sparkles } from 'lucide-react'
 import type { Page, Section, Invoice, EngagementLetter } from '@/types'
+import ProjectAssets from '@/components/ProjectAssets'
 
 const FlipbookViewer = dynamic(() => import('@/components/flipbook/FlipbookViewer'), { ssr: false })
 
@@ -37,16 +38,18 @@ export default async function ClientProjectPage({
 
   if (!project) notFound()
 
-  const [pagesRes, sectionsRes, invoicesRes, letterRes] = await Promise.all([
+  const [pagesRes, sectionsRes, invoicesRes, letterRes, assetsRes] = await Promise.all([
     supabase.from('pages').select('*').eq('project_id', params.id).order('order_index'),
     supabase.from('sections').select('*').eq('project_id', params.id).order('page_start'),
     supabase.from('invoices').select('*').eq('project_id', params.id).order('milestone'),
     supabase.from('engagement_letters').select('*').eq('project_id', params.id).maybeSingle(),
+    supabase.from('project_assets').select('*, profiles(name)').eq('project_id', params.id).order('created_at', { ascending: false }),
   ])
   const pages = pagesRes.data as Page[] | null
   const sections = sectionsRes.data as Section[] | null
   const invoices = invoicesRes.data as Invoice[] | null
   const engagementLetter = letterRes.data as EngagementLetter | null
+  const initialAssets = assetsRes.data ?? []
 
   const totalSections = sections?.length ?? 0
   const approvedSections = sections?.filter(s => s.status === 'approved').length ?? 0
@@ -145,6 +148,9 @@ export default async function ClientProjectPage({
             </div>
           </div>
         )}
+
+        {/* Project Assets — shared file uploads */}
+        <ProjectAssets projectId={params.id} initialAssets={initialAssets as any} />
 
         {!isReadyForReview ? (
           <div className="card-glow text-center py-20">

@@ -6,6 +6,7 @@ import InvoiceTimeline from '@/components/billing/InvoiceTimeline'
 import ProjectStatusUpdater from '@/components/ProjectStatusUpdater'
 import SectionManager from '@/components/approval/SectionManager'
 import EngagementLetterEditor from '@/components/EngagementLetterEditor'
+import ProjectAssets from '@/components/ProjectAssets'
 import type { Section, Invoice, Page, Project, EngagementLetter } from '@/types'
 
 export default async function AdminProjectPage({ params }: { params: { id: string } }) {
@@ -19,16 +20,18 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
 
   if (!project) notFound()
 
-  const [pagesRes, sectionsRes, invoicesRes, letterRes] = await Promise.all([
+  const [pagesRes, sectionsRes, invoicesRes, letterRes, assetsRes] = await Promise.all([
     supabase.from('pages').select('id, order_index, template_type, status').eq('project_id', params.id).order('order_index'),
     supabase.from('sections').select('*').eq('project_id', params.id).order('page_start'),
     supabase.from('invoices').select('*').eq('project_id', params.id).order('milestone'),
     supabase.from('engagement_letters').select('*').eq('project_id', params.id).maybeSingle(),
+    supabase.from('project_assets').select('*, profiles(name)').eq('project_id', params.id).order('created_at', { ascending: false }),
   ])
   const pages = pagesRes.data as Pick<Page, 'id' | 'order_index' | 'template_type' | 'status'>[] | null
   const sections = sectionsRes.data as Section[] | null
   const invoices = invoicesRes.data as Invoice[] | null
   const engagementLetter = letterRes.data as EngagementLetter | null
+  const initialAssets = assetsRes.data ?? []
 
   const totalSections = sections?.length ?? 0
   const approvedSections = sections?.filter(s => s.status === 'approved').length ?? 0
@@ -126,6 +129,9 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
         totalPrice={project.total_price}
         initialLetter={engagementLetter}
       />
+
+      {/* Project Assets */}
+      <ProjectAssets projectId={params.id} initialAssets={initialAssets as any} />
 
       {/* Invoice timeline */}
       <div>
