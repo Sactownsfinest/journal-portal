@@ -44,7 +44,7 @@ export default async function AdminDashboard() {
             <h1 className="text-4xl font-bold mb-2 gold-text">
               Welcome back, Shennel
             </h1>
-            <p style={{ color: 'var(--text-muted)' }}>Create beautiful, bespoke 150-page journals for your clients.</p>
+            <p style={{ color: 'var(--text-muted)' }}>Create beautiful, bespoke 300-page journals for your clients.</p>
           </div>
           <div className="shrink-0"><CreateProjectModal clients={clients ?? []} /></div>
         </div>
