@@ -140,7 +140,7 @@ export default async function ClientProjectPage({
       {/* Project Assets */}
       <ProjectAssets projectId={params.id} initialAssets={initialAssets as any} canDelete={false} />
 
-      {/* Flipbook preview — only when ready for review */}
+      {/* Full flipbook — only when ready for review or complete */}
       {isReadyForReview && pages && pages.length > 0 && (
         <div>
           <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--accent)' }}>Your Journal Preview</h2>
@@ -150,15 +150,15 @@ export default async function ClientProjectPage({
         </div>
       )}
 
-      {/* Sections — show whenever they exist */}
+      {/* Sections — always shown; each card has a Preview button */}
       {sections && sections.length > 0 ? (
         <div>
           <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--accent)' }}>Review &amp; Approve Sections</h2>
           <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
             Review each section of your journal and approve or request changes.
-            Payments process automatically at each milestone.
+            You can preview any section at any time using the Preview button.
           </p>
-          <ApprovalPanel sections={sections} projectId={params.id} />
+          <ApprovalPanel sections={sections} projectId={params.id} pages={pages ?? []} />
         </div>
       ) : (
         <div className="card text-center py-20">
