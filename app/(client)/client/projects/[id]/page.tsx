@@ -81,7 +81,7 @@ export default async function ClientProjectPage({
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold gold-text">{project.title}</h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--text)' }}>Your custom 300-page journal</p>
+        <p className="text-sm mt-1" style={{ color: 'var(--text)' }}>Your custom journal</p>
       </div>
 
       {/* Deposit success banner */}
