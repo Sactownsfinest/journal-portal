@@ -181,7 +181,7 @@ export default async function ClientProjectPage({
             {/* Flipbook */}
             {pages && pages.length > 0 && (
               <div>
-                <h2 className="text-lg font-semibold mb-4">Your Journal Preview</h2>
+                <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--accent)' }}>Your Journal Preview</h2>
                 <div className="flex justify-center">
                   <FlipbookViewer pages={pages} />
                 </div>
@@ -191,7 +191,7 @@ export default async function ClientProjectPage({
             {/* Section approval */}
             {sections && sections.length > 0 && (
               <div>
-                <h2 className="text-lg font-semibold mb-2">Review &amp; Approve Sections</h2>
+                <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--accent)' }}>Review &amp; Approve Sections</h2>
                 <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
                   Review each section of your journal. You can approve it or request changes with notes.
                   Payments are processed automatically as you reach each milestone.

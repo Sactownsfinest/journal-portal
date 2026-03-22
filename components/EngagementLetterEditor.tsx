@@ -156,7 +156,7 @@ export default function EngagementLetterEditor({
             <FileText size={16} style={{ color: 'var(--accent)' }} />
           </div>
           <div>
-            <p className="font-semibold">Engagement Letter</p>
+            <p className="font-bold" style={{ color: 'var(--accent)' }}>Engagement Letter</p>
             <div className="flex items-center gap-1.5 mt-0.5" style={{ color: sc.color }}>
               {sc.icon}
               <span className="text-xs">{sc.label}</span>

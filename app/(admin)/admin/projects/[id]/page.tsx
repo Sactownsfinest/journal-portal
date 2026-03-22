@@ -100,7 +100,7 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
       {/* Approval progress */}
       <div className="card-glow">
         <div className="flex justify-between items-center mb-3">
-          <h2 className="font-semibold text-lg">Overall Approval Progress</h2>
+          <h2 className="font-bold text-lg" style={{ color: 'var(--accent)' }}>Overall Approval Progress</h2>
           <span className="font-bold text-2xl gold-text">{approvalPct}%</span>
         </div>
         <div className="progress-bar h-4">
@@ -135,7 +135,7 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
 
       {/* Invoice timeline */}
       <div>
-        <h2 className="text-lg font-semibold mb-4">Billing Milestones</h2>
+        <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--accent)' }}>Billing Milestones</h2>
         <InvoiceTimeline
           invoices={invoices ?? []}
           totalPrice={project.total_price}
@@ -146,7 +146,7 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
       {/* Sections */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Sections</h2>
+          <h2 className="text-lg font-bold" style={{ color: 'var(--accent)' }}>Sections</h2>
           <SectionManager projectId={params.id} totalPages={totalPages} existingSections={sections ?? []} />
         </div>
         {!sections || sections.length === 0 ? (
