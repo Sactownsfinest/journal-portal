@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
   Upload, FileText, BookOpen, Scroll, Trash2, Download,
-  Plus, X, ChevronDown, Image as ImageIcon, Eye,
+  Plus, X, Image as ImageIcon,
 } from 'lucide-react'
 
-type AssetCategory = 'prompts' | 'story' | 'scriptures' | 'images' | 'design'
+type AssetCategory = 'images' | 'prompts' | 'story' | 'scriptures'
 
 interface Asset {
   id: string
@@ -26,11 +26,10 @@ interface Asset {
 interface Props {
   projectId: string
   initialAssets?: Asset[]
-  /** When false, delete button is hidden (use on client portal) */
   canDelete?: boolean
 }
 
-const CATEGORIES: {
+const TABS: {
   key: AssetCategory
   label: string
   description: string
@@ -42,22 +41,22 @@ const CATEGORIES: {
 }[] = [
   {
     key: 'images',
-    label: 'Images & Photos',
+    label: 'Images',
     description: 'Photos, graphics, or inspiration images for your journal',
     icon: ImageIcon,
     color: '#5B8DB8',
-    bg: 'rgba(91,141,184,0.10)',
-    border: 'rgba(91,141,184,0.25)',
+    bg: 'rgba(91,141,184,0.12)',
+    border: 'rgba(91,141,184,0.3)',
     accept: '.jpg,.jpeg,.png,.webp,.gif,.heic',
   },
   {
     key: 'prompts',
-    label: 'Journal Prompts',
+    label: 'Prompts',
     description: 'Writing prompts, questions, or topics for journal pages',
     icon: BookOpen,
-    color: 'var(--accent)',
-    bg: 'var(--accent-dim)',
-    border: 'rgba(184,131,42,0.25)',
+    color: '#B8832A',
+    bg: 'rgba(184,131,42,0.12)',
+    border: 'rgba(184,131,42,0.3)',
     accept: '.pdf,.doc,.docx,.txt',
   },
   {
@@ -65,19 +64,19 @@ const CATEGORIES: {
     label: 'Your Story',
     description: 'Personal narrative, biography, or life story content',
     icon: FileText,
-    color: 'var(--violet)',
-    bg: 'var(--violet-dim)',
-    border: 'rgba(139,107,174,0.25)',
+    color: '#8B6BAE',
+    bg: 'rgba(139,107,174,0.12)',
+    border: 'rgba(139,107,174,0.3)',
     accept: '.pdf,.doc,.docx,.txt',
   },
   {
     key: 'scriptures',
-    label: 'Scriptures & Quotes',
+    label: 'Scriptures',
     description: 'Favorite verses, quotes, or inspirational passages',
     icon: Scroll,
-    color: 'var(--success)',
-    bg: 'rgba(74,158,127,0.10)',
-    border: 'rgba(74,158,127,0.25)',
+    color: '#4A9E7F',
+    bg: 'rgba(74,158,127,0.12)',
+    border: 'rgba(74,158,127,0.3)',
     accept: '.pdf,.doc,.docx,.txt',
   },
 ]
@@ -94,8 +93,7 @@ function isImage(asset: Asset) {
     /\.(jpg|jpeg|png|webp|gif|heic)$/i.test(asset.file_name))
 }
 
-// Floating image/file preview shown on hover
-function HoverPreview({ asset, cat }: { asset: Asset; cat: typeof CATEGORIES[0] }) {
+function HoverPreview({ asset, cat }: { asset: Asset; cat: typeof TABS[0] }) {
   if (isImage(asset)) {
     return (
       <div
@@ -104,16 +102,13 @@ function HoverPreview({ asset, cat }: { asset: Asset; cat: typeof CATEGORIES[0] 
           bottom: 'calc(100% + 10px)',
           left: '50%',
           transform: 'translateX(-50%)',
-          width: 220,
+          width: 200,
           background: 'var(--card)',
           border: '1.5px solid var(--border)',
         }}
       >
-        <img
-          src={asset.file_url}
-          alt={asset.file_name}
-          style={{ width: '100%', height: 180, objectFit: 'cover', display: 'block' }}
-        />
+        <img src={asset.file_url} alt={asset.file_name}
+          style={{ width: '100%', height: 160, objectFit: 'cover', display: 'block' }} />
         <div className="px-3 py-2">
           <p className="text-xs font-medium truncate" style={{ color: 'var(--text)' }}>{asset.file_name}</p>
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{formatBytes(asset.file_size)}</p>
@@ -128,30 +123,21 @@ function HoverPreview({ asset, cat }: { asset: Asset; cat: typeof CATEGORIES[0] 
         bottom: 'calc(100% + 10px)',
         left: '50%',
         transform: 'translateX(-50%)',
-        width: 200,
+        minWidth: 180,
         background: 'var(--card)',
         border: '1.5px solid var(--border)',
       }}
     >
-      <div className="flex items-center gap-2 mb-1">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-          style={{ background: cat.bg, border: `1px solid ${cat.border}` }}>
-          <cat.icon size={14} style={{ color: cat.color }} />
-        </div>
-        <p className="text-xs font-semibold leading-tight" style={{ color: 'var(--text)' }}>{asset.file_name}</p>
-      </div>
+      <p className="text-xs font-semibold leading-tight mb-1" style={{ color: 'var(--text)' }}>{asset.file_name}</p>
       <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{formatBytes(asset.file_size)}</p>
-      <p className="text-xs mt-1 font-medium" style={{ color: cat.color }}>Click download to open ↓</p>
+      <p className="text-xs mt-1.5 font-medium" style={{ color: cat.color }}>Click ↓ to open</p>
     </div>
   )
 }
 
-// A single file row with hover preview
-function AssetRow({
-  asset, cat, canDelete, onDelete,
-}: {
+function AssetRow({ asset, cat, canDelete, onDelete }: {
   asset: Asset
-  cat: typeof CATEGORIES[0]
+  cat: typeof TABS[0]
   canDelete: boolean
   onDelete: (a: Asset) => void
 }) {
@@ -160,20 +146,19 @@ function AssetRow({
 
   return (
     <div
-      className="relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all group"
+      className="relative flex items-center gap-3 rounded-xl px-3 py-2.5 group transition-all"
       style={{
-        background: hovered ? cat.bg : 'rgba(44,36,22,0.025)',
+        background: hovered ? cat.bg : 'transparent',
         border: `1px solid ${hovered ? cat.border : 'var(--border)'}`,
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Hover preview popup */}
       {hovered && <HoverPreview asset={asset} cat={cat} />}
 
-      {/* Thumbnail (images) or icon */}
       {img ? (
-        <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0" style={{ border: `1px solid ${cat.border}` }}>
+        <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0"
+          style={{ border: `1px solid ${cat.border}` }}>
           <img src={asset.file_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
       ) : (
@@ -183,7 +168,6 @@ function AssetRow({
         </div>
       )}
 
-      {/* Name + meta */}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{asset.file_name}</p>
         <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -193,14 +177,11 @@ function AssetRow({
         </p>
       </div>
 
-      {/* Actions */}
       <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
         <a
-          href={asset.file_url}
-          target="_blank"
-          rel="noopener noreferrer"
+          href={asset.file_url} target="_blank" rel="noopener noreferrer"
           className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
-          style={{ color: 'var(--text-muted)', background: 'var(--surface)' }}
+          style={{ color: 'var(--text-muted)' }}
           onMouseEnter={e => (e.currentTarget.style.color = cat.color)}
           onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
           title="Download / Open"
@@ -211,7 +192,7 @@ function AssetRow({
           <button
             onClick={() => onDelete(asset)}
             className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
-            style={{ color: 'var(--text-muted)', background: 'var(--surface)' }}
+            style={{ color: 'var(--text-muted)' }}
             onMouseEnter={e => (e.currentTarget.style.color = 'var(--danger)')}
             onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
             title="Delete"
@@ -224,128 +205,20 @@ function AssetRow({
   )
 }
 
-// A collapsible category card
-function CategoryCard({
-  cat, assets, uploading, canDelete, onUpload, onDelete,
-}: {
-  cat: typeof CATEGORIES[0]
-  assets: Asset[]
-  uploading: boolean
-  canDelete: boolean
-  onUpload: () => void
-  onDelete: (a: Asset) => void
-}) {
-  const [open, setOpen] = useState(assets.length > 0)
-  const Icon = cat.icon
-  const hasImages = cat.key === 'images'
-
-  return (
-    <div
-      className="rounded-2xl overflow-hidden transition-all"
-      style={{ border: `1.5px solid ${open ? cat.border : 'var(--border)'}`, background: 'var(--card)' }}
-    >
-      {/* Card header — always visible */}
-      <button
-        onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center gap-3 px-5 py-4 text-left transition-colors"
-        style={{ background: open ? cat.bg : 'transparent' }}
-      >
-        <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-          style={{ background: open ? 'rgba(255,255,255,0.6)' : cat.bg, border: `1px solid ${cat.border}` }}
-        >
-          <Icon size={16} style={{ color: cat.color }} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{cat.label}</p>
-            {assets.length > 0 && (
-              <span
-                className="text-xs font-bold px-2 py-0.5 rounded-full"
-                style={{ background: cat.bg, color: cat.color, border: `1px solid ${cat.border}` }}
-              >
-                {assets.length}
-              </span>
-            )}
-          </div>
-          <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{cat.description}</p>
-        </div>
-        <ChevronDown
-          size={16}
-          style={{ color: 'var(--text-muted)', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }}
-        />
-      </button>
-
-      {/* Expanded content */}
-      {open && (
-        <div className="px-5 pb-5 pt-1" style={{ borderTop: `1px solid ${cat.border}` }}>
-          <div className="flex justify-end mb-3 pt-3">
-            <button
-              onClick={onUpload}
-              disabled={uploading}
-              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl transition-all disabled:opacity-50"
-              style={{ background: cat.bg, border: `1px solid ${cat.border}`, color: cat.color }}
-            >
-              {uploading ? (
-                <><div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />Uploading…</>
-              ) : (
-                <><Plus size={13} />Upload File</>
-              )}
-            </button>
-          </div>
-
-          {assets.length === 0 ? (
-            <button
-              onClick={onUpload}
-              className="w-full rounded-xl px-4 py-8 text-center text-xs transition-all"
-              style={{
-                background: 'rgba(44,36,22,0.015)',
-                border: `1.5px dashed ${cat.border}`,
-                color: 'var(--text-muted)',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.color = cat.color)}
-              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
-            >
-              <div className="flex flex-col items-center gap-2">
-                <Icon size={20} style={{ color: cat.color, opacity: 0.5 }} />
-                <span>No files yet — click to upload</span>
-              </div>
-            </button>
-          ) : hasImages ? (
-            /* Image grid */
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-              {assets.map(asset => (
-                <AssetRow key={asset.id} asset={asset} cat={cat} canDelete={canDelete} onDelete={onDelete} />
-              ))}
-            </div>
-          ) : (
-            /* File list */
-            <div className="space-y-2">
-              {assets.map(asset => (
-                <AssetRow key={asset.id} asset={asset} cat={cat} canDelete={canDelete} onDelete={onDelete} />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
 export default function ProjectAssets({ projectId, initialAssets = [], canDelete = true }: Props) {
   const supabase = createClient()
   const [assets, setAssets] = useState<Asset[]>(initialAssets)
-  const [uploading, setUploading] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<AssetCategory>('images')
+  const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const activeCategory = useRef<AssetCategory>('images')
-  const activeAccept = useRef<string>('')
 
-  function openUpload(category: AssetCategory, accept: string) {
-    activeCategory.current = category
-    activeAccept.current = accept
+  const tab = TABS.find(t => t.key === activeTab)!
+  const tabAssets = assets.filter(a => a.category === activeTab)
+
+  function openUpload() {
     if (fileInputRef.current) {
-      fileInputRef.current.accept = accept
+      fileInputRef.current.accept = tab.accept
       fileInputRef.current.value = ''
       fileInputRef.current.click()
     }
@@ -354,19 +227,16 @@ export default function ProjectAssets({ projectId, initialAssets = [], canDelete
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    const category = activeCategory.current
-    if (!category) return
     if (file.size > 50 * 1024 * 1024) { setError('File must be under 50 MB'); return }
 
     setError('')
-    setUploading(category)
+    setUploading(true)
+    const path = `${projectId}/${activeTab}/${Date.now()}-${file.name}`
 
-    const path = `${projectId}/${category}/${Date.now()}-${file.name}`
     const { error: uploadErr } = await supabase.storage
-      .from('project-assets')
-      .upload(path, file, { upsert: false })
+      .from('project-assets').upload(path, file, { upsert: false })
 
-    if (uploadErr) { setError(uploadErr.message); setUploading(null); return }
+    if (uploadErr) { setError(uploadErr.message); setUploading(false); return }
 
     const { data: urlData } = supabase.storage.from('project-assets').getPublicUrl(path)
     const { data: asset, error: dbErr } = await supabase
@@ -374,7 +244,7 @@ export default function ProjectAssets({ projectId, initialAssets = [], canDelete
       .insert({
         project_id: projectId,
         uploaded_by: (await supabase.auth.getUser()).data.user?.id,
-        category,
+        category: activeTab,
         file_name: file.name,
         file_url: urlData.publicUrl,
         file_size: file.size,
@@ -385,7 +255,7 @@ export default function ProjectAssets({ projectId, initialAssets = [], canDelete
 
     if (dbErr) setError(dbErr.message)
     else if (asset) setAssets(prev => [asset as Asset, ...prev])
-    setUploading(null)
+    setUploading(false)
   }
 
   async function deleteAsset(asset: Asset) {
@@ -396,9 +266,9 @@ export default function ProjectAssets({ projectId, initialAssets = [], canDelete
   }
 
   return (
-    <div className="space-y-3">
-      {/* Section header */}
-      <div className="flex items-center gap-2 px-1">
+    <div>
+      {/* Section label */}
+      <div className="flex items-center gap-2 mb-5">
         <div className="w-8 h-8 rounded-xl flex items-center justify-center"
           style={{ background: 'var(--accent-dim)', border: '1px solid rgba(184,131,42,0.2)' }}>
           <Upload size={14} style={{ color: 'var(--accent)' }} />
@@ -406,27 +276,144 @@ export default function ProjectAssets({ projectId, initialAssets = [], canDelete
         <div>
           <h2 className="font-bold text-base" style={{ color: 'var(--accent)' }}>Project Assets</h2>
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-            Shared files — both you and your designer can see and download these
+            Shared files — visible to both you and your designer
           </p>
         </div>
       </div>
 
-      {/* Category cards */}
-      {CATEGORIES.map(cat => (
-        <CategoryCard
-          key={cat.key}
-          cat={cat}
-          assets={assets.filter(a => a.category === cat.key)}
-          uploading={uploading === cat.key}
-          canDelete={canDelete}
-          onUpload={() => openUpload(cat.key, cat.accept)}
-          onDelete={deleteAsset}
-        />
-      ))}
+      {/* Tab strip */}
+      <div
+        className="flex items-center gap-2 p-1.5 rounded-2xl mb-4"
+        style={{ background: 'rgba(44,36,22,0.04)', border: '1px solid var(--border)' }}
+      >
+        {TABS.map(t => {
+          const isActive = t.key === activeTab
+          const count = assets.filter(a => a.category === t.key).length
+          const Icon = t.icon
+          return (
+            <button
+              key={t.key}
+              onClick={() => setActiveTab(t.key)}
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all"
+              style={{
+                background: isActive ? t.bg : 'transparent',
+                border: isActive ? `1.5px solid ${t.border}` : '1.5px solid transparent',
+                color: isActive ? t.color : 'var(--text-muted)',
+                boxShadow: isActive ? `0 2px 8px ${t.bg}` : 'none',
+              }}
+            >
+              <Icon size={15} />
+              <span className="hidden sm:inline">{t.label}</span>
+              {count > 0 && (
+                <span
+                  className="text-xs font-bold px-1.5 py-0.5 rounded-full leading-none"
+                  style={{
+                    background: isActive ? 'rgba(255,255,255,0.5)' : t.bg,
+                    color: t.color,
+                  }}
+                >
+                  {count}
+                </span>
+              )}
+            </button>
+          )
+        })}
+      </div>
 
-      {/* Error toast */}
+      {/* Content panel */}
+      <div
+        className="rounded-2xl overflow-hidden"
+        style={{
+          border: `1.5px solid ${tab.border}`,
+          background: 'var(--card)',
+        }}
+      >
+        {/* Panel header */}
+        <div
+          className="flex items-center justify-between px-5 py-4"
+          style={{
+            background: tab.bg,
+            borderBottom: `1px solid ${tab.border}`,
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center"
+              style={{ background: 'rgba(255,255,255,0.55)', border: `1px solid ${tab.border}` }}
+            >
+              <tab.icon size={16} style={{ color: tab.color }} />
+            </div>
+            <div>
+              <p className="font-bold text-sm" style={{ color: tab.color }}>{tab.label}</p>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{tab.description}</p>
+            </div>
+          </div>
+
+          <button
+            onClick={openUpload}
+            disabled={uploading}
+            className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl transition-all disabled:opacity-50"
+            style={{
+              background: 'rgba(255,255,255,0.7)',
+              border: `1.5px solid ${tab.border}`,
+              color: tab.color,
+              boxShadow: '0 1px 4px rgba(44,36,22,0.06)',
+            }}
+          >
+            {uploading ? (
+              <><div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />Uploading…</>
+            ) : (
+              <><Plus size={14} />Upload</>
+            )}
+          </button>
+        </div>
+
+        {/* File list */}
+        <div className="p-4">
+          {tabAssets.length === 0 ? (
+            <button
+              onClick={openUpload}
+              className="w-full rounded-xl py-12 flex flex-col items-center gap-3 transition-all group"
+              style={{
+                background: 'transparent',
+                border: `1.5px dashed ${tab.border}`,
+                color: 'var(--text-muted)',
+              }}
+            >
+              <div
+                className="w-12 h-12 rounded-2xl flex items-center justify-center transition-all group-hover:scale-110"
+                style={{ background: tab.bg, border: `1px solid ${tab.border}` }}
+              >
+                <tab.icon size={20} style={{ color: tab.color }} />
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-semibold" style={{ color: tab.color }}>
+                  No {tab.label.toLowerCase()} yet
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                  Click to upload your first file
+                </p>
+              </div>
+            </button>
+          ) : (
+            <div className="space-y-2">
+              {tabAssets.map(asset => (
+                <AssetRow
+                  key={asset.id}
+                  asset={asset}
+                  cat={tab}
+                  canDelete={canDelete}
+                  onDelete={deleteAsset}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Error */}
       {error && (
-        <div className="flex items-center gap-2 text-xs px-4 py-3 rounded-xl"
+        <div className="mt-3 flex items-center gap-2 text-xs px-4 py-3 rounded-xl"
           style={{ color: 'var(--danger)', background: 'rgba(192,82,74,0.08)', border: '1px solid rgba(192,82,74,0.2)' }}
         >
           <X size={13} />
@@ -435,7 +422,6 @@ export default function ProjectAssets({ projectId, initialAssets = [], canDelete
         </div>
       )}
 
-      {/* Hidden file input */}
       <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} />
     </div>
   )
