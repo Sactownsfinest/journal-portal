@@ -43,7 +43,6 @@ export type ElementType = 'heading' | 'body' | 'image' | 'lines' | 'scripture' |
 export interface CanvasElement {
   id: string
   type: ElementType
-  // Position as % of canvas dimensions
   x: number
   y: number
   w: number
@@ -59,6 +58,7 @@ export interface CanvasElement {
   bg_color?: string
   line_color?: string
   italic?: boolean
+  opacity?: number  // 0–1, applies to image and element bg
 }
 
 export interface PageContent {
@@ -71,8 +71,18 @@ export interface PageContent {
   lines_count?: number
   image_side?: 'left' | 'right'
   // Free-form canvas fields
+  name?: string       // editable page name shown in sidebar
   bg_color?: string
+  bg_opacity?: number // 0–1 opacity for page background image/color overlay
   elements?: CanvasElement[]
+}
+
+export interface PageTemplate {
+  id: string
+  name: string
+  bg_color?: string
+  elements: CanvasElement[]
+  created_at: string
 }
 
 export interface Page {

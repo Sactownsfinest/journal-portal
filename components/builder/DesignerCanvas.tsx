@@ -29,11 +29,17 @@ function renderElement(el: CanvasElement, isSelected: boolean) {
   }
 
   if (['heading', 'body', 'scripture', 'prompt'].includes(el.type)) {
+    // Convert bg_color + opacity into rgba if needed
+    const bgStyle = el.bg_color
+      ? el.opacity !== undefined && el.opacity < 1
+        ? `${el.bg_color}${Math.round((el.opacity ?? 1) * 255).toString(16).padStart(2, '0')}`
+        : el.bg_color
+      : 'transparent'
     return (
       <div
         style={{
           ...base,
-          background: el.bg_color || 'transparent',
+          background: bgStyle,
           display: 'flex',
           alignItems: 'flex-start',
           padding: '4px',
@@ -63,7 +69,7 @@ function renderElement(el: CanvasElement, isSelected: boolean) {
     return (
       <div style={{ ...base, background: '#E8E0D0' }}>
         {el.image_url ? (
-          <img src={el.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img src={el.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: el.opacity ?? 1 }} />
         ) : (
           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C8B89A', fontSize: 11 }}>
             📷 Click to upload

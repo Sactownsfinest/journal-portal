@@ -54,16 +54,31 @@ export default function PropertiesPanel({ element, projectId, onChange, onDelete
         </div>
       )}
 
-      {/* Image upload */}
+      {/* Image upload + opacity */}
       {element.type === 'image' && (
-        <div>
-          <label className="label">Image</label>
-          <ImageUploader
-            value={element.image_url}
-            onChange={url => onChange({ image_url: url })}
-            projectId={projectId}
-          />
-        </div>
+        <>
+          <div>
+            <label className="label">Image</label>
+            <ImageUploader
+              value={element.image_url}
+              onChange={url => onChange({ image_url: url })}
+              projectId={projectId}
+            />
+          </div>
+          <div>
+            <label className="label">Opacity ({Math.round((element.opacity ?? 1) * 100)}%)</label>
+            <input
+              type="range" min={0} max={100}
+              value={Math.round((element.opacity ?? 1) * 100)}
+              onChange={e => onChange({ opacity: parseInt(e.target.value) / 100 })}
+              className="w-full"
+              style={{ accentColor: 'var(--accent)' }}
+            />
+            <div className="flex justify-between text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+              <span>0%</span><span>100%</span>
+            </div>
+          </div>
+        </>
       )}
 
       {/* Lines count */}
@@ -188,6 +203,22 @@ export default function PropertiesPanel({ element, projectId, onChange, onDelete
             value={element.bg_color ?? ''}
             onChange={v => onChange({ bg_color: v })}
           />
+
+          {element.bg_color && (
+            <div>
+              <label className="label">Background Opacity ({Math.round((element.opacity ?? 1) * 100)}%)</label>
+              <input
+                type="range" min={0} max={100}
+                value={Math.round((element.opacity ?? 1) * 100)}
+                onChange={e => onChange({ opacity: parseInt(e.target.value) / 100 })}
+                className="w-full"
+                style={{ accentColor: 'var(--accent)' }}
+              />
+              <div className="flex justify-between text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                <span>0%</span><span>100%</span>
+              </div>
+            </div>
+          )}
         </>
       )}
 
