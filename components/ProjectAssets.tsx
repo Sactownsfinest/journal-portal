@@ -357,8 +357,8 @@ export default function ProjectAssets({ projectId, initialAssets = [], canDelete
         </div>
       </div>
 
-      {/* 2×2 card grid */}
-      <div className="grid grid-cols-2 gap-3">
+      {/* Single-column shelf cards */}
+      <div className="flex flex-col gap-3">
         {CATEGORIES.map(cat => (
           <CategoryCard
             key={cat.key}
