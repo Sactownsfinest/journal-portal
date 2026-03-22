@@ -26,7 +26,11 @@ export async function GET(request: NextRequest) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
-      // Redirect to root — middleware will send them to their project
+      // Invite links include type=invite — send them to set a password first
+      const type = searchParams.get('type')
+      if (type === 'invite') {
+        return NextResponse.redirect(`${origin}/set-password`)
+      }
       return NextResponse.redirect(`${origin}${next}`)
     }
   }
