@@ -9,6 +9,7 @@ import SectionManager from '@/components/approval/SectionManager'
 import EngagementLetterEditor from '@/components/EngagementLetterEditor'
 import ProjectAssets from '@/components/ProjectAssets'
 import AssignClientPanel from '@/components/AssignClientPanel'
+import SectionRow from '@/components/approval/SectionRow'
 import type { Section, Invoice, Page, Project, EngagementLetter } from '@/types'
 
 export default async function AdminProjectPage({ params }: { params: { id: string } }) {
@@ -174,7 +175,7 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
           </div>
         ) : (
           <div className="space-y-3">
-            {sections.map(section => (
+            {sections.map((section: Section) => (
               <SectionRow key={section.id} section={section} />
             ))}
           </div>
@@ -184,49 +185,3 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
   )
 }
 
-function SectionRow({ section }: { section: Section }) {
-  const statusConfig = {
-    pending: { color: 'var(--text-muted)', bg: 'rgba(42,74,107,0.4)', label: 'Pending Review', badgeClass: '' },
-    approved: { color: 'var(--success)', bg: 'rgba(45,212,191,0.1)', label: 'Approved', badgeClass: 'badge-success' },
-    rejected: { color: 'var(--danger)', bg: 'rgba(248,113,113,0.1)', label: 'Rejected', badgeClass: 'badge-danger' },
-  }
-  const s = statusConfig[section.status]
-
-  return (
-    <div className="card">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 className="font-medium" style={{ color: 'var(--accent)' }}>{section.name}</h3>
-            <span
-              className="text-xs px-2 py-0.5 rounded-full font-medium"
-              style={{ color: s.color, background: s.bg }}
-            >
-              {s.label}
-            </span>
-          </div>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
-            Pages {section.page_start}–{section.page_end}
-          </p>
-          {section.client_notes && (
-            <p
-              className="text-sm mt-2 rounded-lg px-3 py-2"
-              style={{
-                color: 'var(--warning)',
-                background: 'rgba(251,191,36,0.08)',
-                border: '1px solid rgba(251,191,36,0.2)',
-              }}
-            >
-              Client note: &ldquo;{section.client_notes}&rdquo;
-            </p>
-          )}
-        </div>
-        {section.reviewed_at && (
-          <p className="text-xs shrink-0" style={{ color: 'var(--text-muted)' }}>
-            {new Date(section.reviewed_at).toLocaleDateString()}
-          </p>
-        )}
-      </div>
-    </div>
-  )
-}
