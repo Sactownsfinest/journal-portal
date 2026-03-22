@@ -17,7 +17,15 @@ export default async function ClientLayout({ children }: { children: React.React
   if (profile?.role !== 'client') redirect('/admin/dashboard')
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div
+      className="min-h-screen flex flex-col"
+      style={{
+        backgroundImage: "url('/dashboard-bg.jpg')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+      }}
+    >
       <ClientNav clientName={profile.name} />
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
         {children}
