@@ -96,7 +96,7 @@ export interface Page {
   reviewed_at?: string
 }
 
-export type SectionStatus = 'pending' | 'approved' | 'rejected'
+export type SectionStatus = 'draft' | 'pending' | 'approved' | 'rejected'
 
 export interface Section {
   id: string

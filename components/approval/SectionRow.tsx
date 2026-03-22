@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { RotateCcw, CheckCircle, Pencil, Eye, Trash2, X, BookOpen } from 'lucide-react'
+import { RotateCcw, CheckCircle, Pencil, Eye, Trash2, X, BookOpen, Send } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import type { Page, Section } from '@/types'
 
@@ -18,7 +18,8 @@ const TEMPLATE_LABELS: Record<string, { label: string; color: string }> = {
 }
 
 const STATUS_CONFIG = {
-  pending:  { color: 'var(--text-muted)', bg: 'rgba(42,74,107,0.4)',    label: 'Pending Review' },
+  draft:    { color: '#8A9BB8',           bg: 'rgba(138,155,184,0.12)', label: 'Draft' },
+  pending:  { color: 'var(--text-muted)', bg: 'rgba(42,74,107,0.4)',    label: 'Sent to Client' },
   approved: { color: 'var(--success)',    bg: 'rgba(45,212,191,0.1)',   label: 'Approved' },
   rejected: { color: 'var(--danger)',     bg: 'rgba(248,113,113,0.1)', label: 'Rejected' },
 }
@@ -35,12 +36,23 @@ export default function SectionRow({ section, pages, allSections }: Props) {
   const [showPreview, setShowPreview] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const router = useRouter()
-  const s = STATUS_CONFIG[section.status]
+  const s = STATUS_CONFIG[section.status] ?? STATUS_CONFIG.draft
 
   const sectionPages = pages.filter(p => {
     const n = p.order_index + 1
     return n >= section.page_start && n <= section.page_end
   })
+
+  async function sendToClient() {
+    setSaving(true)
+    const supabase = createClient()
+    await supabase
+      .from('sections')
+      .update({ status: 'pending' })
+      .eq('id', section.id)
+    setSaving(false)
+    router.refresh()
+  }
 
   async function updateStatus(newStatus: 'pending' | 'approved') {
     setSaving(true)
@@ -89,6 +101,15 @@ export default function SectionRow({ section, pages, allSections }: Props) {
               <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                 {new Date(section.reviewed_at).toLocaleDateString()}
               </p>
+            )}
+
+            {/* Send to Client — draft only */}
+            {section.status === 'draft' && (
+              <button onClick={sendToClient} disabled={saving}
+                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-semibold transition-all disabled:opacity-50"
+                style={{ color: '#fff', background: 'var(--accent)', border: '1px solid var(--accent)' }}>
+                <Send size={12} /> {saving ? 'Sending…' : 'Send to Client'}
+              </button>
             )}
 
             {/* Preview */}

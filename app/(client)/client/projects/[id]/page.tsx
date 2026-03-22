@@ -70,8 +70,10 @@ export default async function ClientProjectPage({
   const engagementLetter = letterRes.data as EngagementLetter | null
   const initialAssets = assetsRes.data ?? []
 
-  const createdSections = sections?.length ?? 0
-  const approvedSections = sections?.filter(s => s.status === 'approved').length ?? 0
+  // Only show sections that have been sent to the client (not drafts)
+  const visibleSections = sections?.filter(s => s.status !== 'draft') ?? []
+  const createdSections = visibleSections.length
+  const approvedSections = visibleSections.filter(s => s.status === 'approved').length
   const totalSections = (project as any).total_sections ?? createdSections
   const approvalPct = totalSections > 0 ? Math.round((approvedSections / totalSections) * 100) : 0
   const isReadyForReview = project.status === 'ready_for_review' || project.status === 'complete'
@@ -163,15 +165,15 @@ export default async function ClientProjectPage({
         </div>
       )}
 
-      {/* Sections — always shown; each card has a Preview button */}
-      {sections && sections.length > 0 ? (
+      {/* Sections — only show sections sent to client (not drafts) */}
+      {visibleSections.length > 0 ? (
         <div>
           <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--accent)' }}>Review &amp; Approve Sections</h2>
           <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
             Review each section of your journal and approve or request changes.
             You can preview any section at any time using the Preview button.
           </p>
-          <ApprovalPanel sections={sections} projectId={params.id} pages={pages ?? []} />
+          <ApprovalPanel sections={visibleSections} projectId={params.id} pages={pages ?? []} />
         </div>
       ) : (
         <div className="card text-center py-20">

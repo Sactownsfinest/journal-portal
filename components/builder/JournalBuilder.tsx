@@ -154,7 +154,7 @@ export default function JournalBuilder({ projectId, projectTitle, initialPages, 
     if (sectionMode === 'create') {
       const { data, error } = await supabase
         .from('sections')
-        .insert({ project_id: projectId, name: sectionName.trim(), page_start: start, page_end: end, status: 'pending' })
+        .insert({ project_id: projectId, name: sectionName.trim(), page_start: start, page_end: end, status: 'draft' })
         .select().single()
       if (error) { setSectionError(error.message); setSectionSaving(false); return }
       setSections(prev => [...prev, data as Section].sort((a, b) => a.page_start - b.page_start))

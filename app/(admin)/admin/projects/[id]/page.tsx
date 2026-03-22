@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { syncDepositIfPaid } from '@/lib/sync-deposit'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { BookOpen, Pencil, CheckCircle, XCircle, Clock, Download } from 'lucide-react'
+import { BookOpen, Pencil, CheckCircle, XCircle, Clock, Download, FileText, ChevronDown } from 'lucide-react'
 import InvoiceTimeline from '@/components/billing/InvoiceTimeline'
 import ProjectStatusUpdater from '@/components/ProjectStatusUpdater'
 import SectionManager from '@/components/approval/SectionManager'
@@ -16,13 +16,14 @@ import type { Section, Invoice, Page, Project, EngagementLetter } from '@/types'
 export default async function AdminProjectPage({ params }: { params: { id: string } }) {
   const supabase = await createClient()
 
-  const { data: project } = await supabase
+  const { data: projectRaw } = await supabase
     .from('projects')
     .select('*, profiles(name, email)')
     .eq('id', params.id)
-    .single() as { data: (Project & { profiles: { name: string; email: string } }) | null }
+    .single() as { data: (Project & { profiles: { name: string; email: string } } & { total_sections?: number | null }) | null }
 
-  if (!project) notFound()
+  if (!projectRaw) notFound()
+  const project = projectRaw!
 
   // Sync deposit status if stuck
   if (project.status === 'awaiting_deposit') {
@@ -52,12 +53,16 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
   const createdSections = sections?.length ?? 0
   const approvedSections = sections?.filter(s => s.status === 'approved').length ?? 0
   const rejectedSections = sections?.filter(s => s.status === 'rejected').length ?? 0
-  // Use admin-set total if available, otherwise fall back to created count
-  const totalSections = (project as any).total_sections ?? createdSections
+  const totalSections = project.total_sections ?? createdSections
   const approvalPct = totalSections > 0 ? Math.round((approvedSections / totalSections) * 100) : 0
   const totalPages = pages?.length ?? 0
 
   const isComplete = approvalPct >= 100 && totalSections > 0
+
+  // Group sections
+  const draftSections    = sections?.filter(s => s.status === 'draft') ?? []
+  const pendingSections  = sections?.filter(s => s.status === 'pending') ?? []
+  const reviewedSections = sections?.filter(s => s.status === 'approved' || s.status === 'rejected') ?? []
 
   return (
     <div className="space-y-8">
@@ -144,7 +149,7 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
             </span>
             <TotalSectionsEditor
               projectId={params.id}
-              totalSections={(project as any).total_sections ?? null}
+              totalSections={project.total_sections ?? null}
               createdSections={createdSections}
             />
           </div>
@@ -152,18 +157,80 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
         </div>
       </div>
 
-      {/* Engagement letter */}
-      <EngagementLetterEditor
-        projectId={params.id}
-        projectTitle={project.title}
-        clientName={project.profiles?.name ?? ''}
-        clientEmail={project.profiles?.email ?? ''}
-        totalPrice={project.total_price}
-        initialLetter={engagementLetter}
-      />
-
       {/* Project Assets */}
       <ProjectAssets projectId={params.id} initialAssets={initialAssets as any} />
+
+      {/* Sections — grouped */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold" style={{ color: 'var(--accent)' }}>Sections</h2>
+          <SectionManager projectId={params.id} pages={pages ?? []} existingSections={sections ?? []} />
+        </div>
+
+        {createdSections === 0 ? (
+          <div className="card text-center py-10" style={{ color: 'var(--text-muted)' }}>
+            No sections yet. Open the Builder, create your pages, then add sections from the Sections tab.
+          </div>
+        ) : (
+          <div className="space-y-6">
+
+            {/* Draft */}
+            {draftSections.length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xs font-bold uppercase tracking-widest px-2.5 py-1 rounded-full"
+                    style={{ color: '#8A9BB8', background: 'rgba(138,155,184,0.12)', border: '1px solid rgba(138,155,184,0.2)' }}>
+                    Draft · {draftSections.length}
+                  </span>
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>not yet sent to client</span>
+                </div>
+                <div className="space-y-2">
+                  {draftSections.map((section: Section) => (
+                    <SectionRow key={section.id} section={section} pages={pages ?? []} allSections={sections ?? []} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Awaiting Review */}
+            {pendingSections.length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xs font-bold uppercase tracking-widest px-2.5 py-1 rounded-full"
+                    style={{ color: '#FBBF24', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)' }}>
+                    Awaiting Review · {pendingSections.length}
+                  </span>
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>sent, waiting on client</span>
+                </div>
+                <div className="space-y-2">
+                  {pendingSections.map((section: Section) => (
+                    <SectionRow key={section.id} section={section} pages={pages ?? []} allSections={sections ?? []} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Reviewed */}
+            {reviewedSections.length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xs font-bold uppercase tracking-widest px-2.5 py-1 rounded-full"
+                    style={{ color: 'var(--success)', background: 'rgba(45,212,191,0.08)', border: '1px solid rgba(45,212,191,0.2)' }}>
+                    Reviewed · {reviewedSections.length}
+                  </span>
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>approved or rejected by client</span>
+                </div>
+                <div className="space-y-2">
+                  {reviewedSections.map((section: Section) => (
+                    <SectionRow key={section.id} section={section} pages={pages ?? []} allSections={sections ?? []} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+          </div>
+        )}
+      </div>
 
       {/* Invoice timeline */}
       <div>
@@ -175,25 +242,44 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
         />
       </div>
 
-      {/* Sections */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold" style={{ color: 'var(--accent)' }}>Sections</h2>
-          <SectionManager projectId={params.id} pages={pages ?? []} existingSections={sections ?? []} />
+      {/* Engagement letter — compact, at bottom */}
+      <details className="group">
+        <summary
+          className="flex items-center justify-between cursor-pointer list-none rounded-2xl px-5 py-4 select-none"
+          style={{ background: 'var(--card)', border: '1.5px solid var(--border)' }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: 'var(--accent-dim)' }}>
+              <FileText size={14} style={{ color: 'var(--accent)' }} />
+            </div>
+            <div>
+              <span className="font-semibold text-sm" style={{ color: 'var(--accent)' }}>Engagement Letter</span>
+              {engagementLetter && (
+                <span className="ml-2 text-xs px-2 py-0.5 rounded-full font-medium"
+                  style={{
+                    color: engagementLetter.status === 'accepted' ? 'var(--success)' : engagementLetter.status === 'sent' ? '#FBBF24' : 'var(--text-muted)',
+                    background: engagementLetter.status === 'accepted' ? 'rgba(45,212,191,0.1)' : engagementLetter.status === 'sent' ? 'rgba(251,191,36,0.1)' : 'rgba(42,74,107,0.3)',
+                  }}>
+                  {engagementLetter.status === 'accepted' ? 'Accepted' : engagementLetter.status === 'sent' ? 'Sent' : 'Draft'}
+                </span>
+              )}
+            </div>
+          </div>
+          <ChevronDown size={16} style={{ color: 'var(--text-muted)' }}
+            className="transition-transform group-open:rotate-180" />
+        </summary>
+        <div className="mt-2">
+          <EngagementLetterEditor
+            projectId={params.id}
+            projectTitle={project.title}
+            clientName={project.profiles?.name ?? ''}
+            clientEmail={project.profiles?.email ?? ''}
+            totalPrice={project.total_price}
+            initialLetter={engagementLetter}
+          />
         </div>
-        {!sections || sections.length === 0 ? (
-          <div className="card text-center py-10" style={{ color: 'var(--text-muted)' }}>
-            No sections yet. Add pages in the builder, then create sections to send for client review.
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {sections.map((section: Section) => (
-              <SectionRow key={section.id} section={section} pages={pages ?? []} allSections={sections} />
-            ))}
-          </div>
-        )}
-      </div>
+      </details>
     </div>
   )
 }
-
