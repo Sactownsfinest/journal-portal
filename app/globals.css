@@ -15,7 +15,7 @@
   --violet-light: #9F7EC5;
   --violet-dim: rgba(139,107,174,0.10);
   --text: #1A1208;
-  --text-muted: #6B5A4A;
+  --text-muted: #4A3828;
   --success: #4A9E7F;
   --danger: #C0524A;
   --warning: #C98B0A;
@@ -105,17 +105,17 @@ body {
 
   /* ── Cards ────────────────────────────────────── */
   .card {
-    background: var(--card);
+    background: #FFFDF7;
     border: 1.5px solid var(--border);
     @apply rounded-2xl p-6;
-    box-shadow: 0 2px 12px rgba(44,36,22,0.06), 0 1px 3px rgba(44,36,22,0.04);
+    box-shadow: 0 4px 20px rgba(44,36,22,0.10), 0 1px 3px rgba(44,36,22,0.06);
   }
 
   .card-glow {
-    background: var(--card);
-    border: 1.5px solid rgba(184,131,42,0.2);
+    background: #FFFDF7;
+    border: 1.5px solid rgba(184,131,42,0.25);
     @apply rounded-2xl p-6;
-    box-shadow: 0 2px 12px rgba(44,36,22,0.06), 0 0 30px rgba(184,131,42,0.06);
+    box-shadow: 0 4px 20px rgba(44,36,22,0.10), 0 0 30px rgba(184,131,42,0.08);
   }
 
   .card-glass {
