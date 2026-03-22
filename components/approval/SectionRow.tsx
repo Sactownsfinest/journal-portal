@@ -4,8 +4,10 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { RotateCcw, CheckCircle, Pencil, Eye, Trash2, X, BookOpen } from 'lucide-react'
+import dynamic from 'next/dynamic'
 import type { Page, Section } from '@/types'
-import PagePreview from '@/components/builder/PagePreview'
+
+const FlipbookViewer = dynamic(() => import('@/components/flipbook/FlipbookViewer'), { ssr: false })
 
 const TEMPLATE_LABELS: Record<string, { label: string; color: string }> = {
   cover:        { label: 'Cover',    color: '#B8832A' },
@@ -219,25 +221,14 @@ function PreviewModal({ section, pages, onClose }: { section: Section; pages: Pa
           </button>
         </div>
 
-        {/* Pages grid */}
-        <div className="flex-1 overflow-y-auto p-6" style={{ background: 'var(--bg)' }}>
+        {/* Flipbook */}
+        <div className="flex-1 overflow-auto p-6 flex items-center justify-center" style={{ background: 'var(--bg)' }}>
           {pages.length === 0 ? (
             <p className="text-center py-12 text-sm" style={{ color: 'var(--text-muted)' }}>
               No pages in this range yet.
             </p>
           ) : (
-            <div className="flex flex-wrap gap-6 justify-center">
-              {pages.map(p => (
-                <div key={p.id} className="flex flex-col items-center gap-2">
-                  <div style={{ transform: 'scale(0.5)', transformOrigin: 'top center', marginBottom: -200 }}>
-                    <PagePreview page={p} />
-                  </div>
-                  <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
-                    P{p.order_index + 1}{p.content?.name ? ` · ${p.content.name}` : ''}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <FlipbookViewer pages={pages} />
           )}
         </div>
       </div>
