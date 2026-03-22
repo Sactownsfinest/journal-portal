@@ -41,9 +41,8 @@ export default async function AdminDashboard() {
               <span className="text-xs font-bold tracking-widest uppercase" style={{ color: 'var(--accent)' }}>Journal Studio</span>
               <Star size={13} style={{ color: 'var(--accent)' }} fill="currentColor" />
             </div>
-            <h1 className="text-4xl font-bold mb-2" style={{ color: 'var(--text)' }}>
-              Welcome back,{' '}
-              <span className="gold-text">Shennel</span>
+            <h1 className="text-4xl font-bold mb-2 gold-text">
+              Welcome back, Shennel
             </h1>
             <p style={{ color: 'var(--text-muted)' }}>Create beautiful, bespoke 150-page journals for your clients.</p>
           </div>

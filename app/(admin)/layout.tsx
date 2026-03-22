@@ -26,7 +26,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           backgroundImage: "url('/dashboard-bg.jpg')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          opacity: 0.18,
+          opacity: 0.08,
           zIndex: 0,
           pointerEvents: 'none',
         }}
