@@ -18,7 +18,13 @@ export default function LoginPage() {
     if (params.get('error') === 'invite_expired') {
       setError('Your invite link has expired. Please ask Shennel to resend it.')
     }
-  }, [])
+
+    // Supabase sometimes lands here with the invite token in the hash — forward to callback
+    const hash = window.location.hash
+    if (hash && hash.includes('type=invite') && hash.includes('access_token=')) {
+      router.replace(`/auth/callback${hash}`)
+    }
+  }, [router])
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
