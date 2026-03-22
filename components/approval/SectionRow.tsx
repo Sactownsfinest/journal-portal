@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { RotateCcw, CheckCircle, Pencil, Eye, Trash2, X, BookOpen } from 'lucide-react'
@@ -152,7 +152,6 @@ export default function SectionRow({ section, pages, allSections }: Props) {
       {showPreview && (
         <PreviewModal
           section={section}
-          pages={sectionPages as Page[]}
           onClose={() => setShowPreview(false)}
         />
       )}
@@ -192,7 +191,25 @@ export default function SectionRow({ section, pages, allSections }: Props) {
 }
 
 // ─── Preview Modal ────────────────────────────────────────────────────────────
-function PreviewModal({ section, pages, onClose }: { section: Section; pages: Page[]; onClose: () => void }) {
+function PreviewModal({ section, onClose }: { section: Section; onClose: () => void }) {
+  const [pages, setPages] = useState<Page[] | null>(null)
+  const supabase = createClient()
+
+  // Fetch fresh pages from DB when modal opens — avoids stale server-rendered data
+  useEffect(() => {
+    async function load() {
+      const { data } = await supabase
+        .from('pages')
+        .select('*')
+        .eq('project_id', section.project_id)
+        .gte('order_index', section.page_start - 1)
+        .lte('order_index', section.page_end - 1)
+        .order('order_index')
+      setPages((data ?? []) as Page[])
+    }
+    load()
+  }, [section.id])
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div
@@ -211,7 +228,8 @@ function PreviewModal({ section, pages, onClose }: { section: Section; pages: Pa
             <div>
               <h3 className="font-bold" style={{ color: 'var(--accent)' }}>{section.name}</h3>
               <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                Pages {section.page_start}–{section.page_end} · {pages.length} pages
+                Pages {section.page_start}–{section.page_end}
+                {pages !== null && ` · ${pages.length} pages`}
               </p>
             </div>
           </div>
@@ -223,7 +241,13 @@ function PreviewModal({ section, pages, onClose }: { section: Section; pages: Pa
 
         {/* Flipbook */}
         <div className="flex-1 overflow-auto p-6 flex items-center justify-center" style={{ background: 'var(--bg)' }}>
-          {pages.length === 0 ? (
+          {pages === null ? (
+            <div className="flex flex-col items-center gap-3" style={{ color: 'var(--text-muted)' }}>
+              <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin"
+                style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
+              <p className="text-sm">Loading pages…</p>
+            </div>
+          ) : pages.length === 0 ? (
             <p className="text-center py-12 text-sm" style={{ color: 'var(--text-muted)' }}>
               No pages in this range yet.
             </p>
