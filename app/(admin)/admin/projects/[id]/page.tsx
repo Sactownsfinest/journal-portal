@@ -102,7 +102,7 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: 'Pages', value: totalPages, icon: BookOpen, color: 'var(--accent)', bg: 'var(--accent-dim)' },
-          { label: 'Sections', value: totalSections, icon: Clock, color: 'var(--text-muted)', bg: 'rgba(42,74,107,0.4)' },
+          { label: 'Sections', value: createdSections, icon: Clock, color: 'var(--text-muted)', bg: 'rgba(42,74,107,0.4)' },
           { label: 'Approved', value: approvedSections, icon: CheckCircle, color: 'var(--success)', bg: 'rgba(45,212,191,0.1)' },
           { label: 'Rejected', value: rejectedSections, icon: XCircle, color: 'var(--danger)', bg: 'rgba(248,113,113,0.1)' },
         ].map(stat => (
