@@ -10,6 +10,7 @@ import EngagementLetterEditor from '@/components/EngagementLetterEditor'
 import ProjectAssets from '@/components/ProjectAssets'
 import AssignClientPanel from '@/components/AssignClientPanel'
 import SectionRow from '@/components/approval/SectionRow'
+import TotalSectionsEditor from '@/components/TotalSectionsEditor'
 import type { Section, Invoice, Page, Project, EngagementLetter } from '@/types'
 
 export default async function AdminProjectPage({ params }: { params: { id: string } }) {
@@ -48,9 +49,11 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
   const engagementLetter = letterRes.data as EngagementLetter | null
   const initialAssets = assetsRes.data ?? []
 
-  const totalSections = sections?.length ?? 0
+  const createdSections = sections?.length ?? 0
   const approvedSections = sections?.filter(s => s.status === 'approved').length ?? 0
   const rejectedSections = sections?.filter(s => s.status === 'rejected').length ?? 0
+  // Use admin-set total if available, otherwise fall back to created count
+  const totalSections = (project as any).total_sections ?? createdSections
   const approvalPct = totalSections > 0 ? Math.round((approvedSections / totalSections) * 100) : 0
   const totalPages = pages?.length ?? 0
 
@@ -134,8 +137,17 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
             }}
           />
         </div>
-        <div className="flex justify-between mt-3 text-xs" style={{ color: 'var(--text-muted)' }}>
-          <span>{approvedSections} of {totalSections} sections approved</span>
+        <div className="flex justify-between items-center mt-3">
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+              {approvedSections} of {totalSections} sections approved
+            </span>
+            <TotalSectionsEditor
+              projectId={params.id}
+              totalSections={(project as any).total_sections ?? null}
+              createdSections={createdSections}
+            />
+          </div>
           <ProjectStatusUpdater projectId={params.id} currentStatus={project.status} />
         </div>
       </div>

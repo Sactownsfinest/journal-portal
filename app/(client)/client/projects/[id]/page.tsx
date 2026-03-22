@@ -31,7 +31,7 @@ export default async function ClientProjectPage({
 
   const { data: project } = await supabase
     .from('projects')
-    .select('id, title, status, total_price, client_id')
+    .select('id, title, status, total_price, client_id, total_sections')
     .eq('id', params.id)
     .eq('client_id', user.id)
     .single()
@@ -57,8 +57,9 @@ export default async function ClientProjectPage({
   const engagementLetter = letterRes.data as EngagementLetter | null
   const initialAssets = assetsRes.data ?? []
 
-  const totalSections = sections?.length ?? 0
+  const createdSections = sections?.length ?? 0
   const approvedSections = sections?.filter(s => s.status === 'approved').length ?? 0
+  const totalSections = (project as any).total_sections ?? createdSections
   const approvalPct = totalSections > 0 ? Math.round((approvedSections / totalSections) * 100) : 0
   const isReadyForReview = project.status === 'ready_for_review' || project.status === 'complete'
   const needsLetterAcceptance = engagementLetter && engagementLetter.status !== 'accepted'
