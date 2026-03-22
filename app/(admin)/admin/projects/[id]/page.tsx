@@ -37,13 +37,13 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
     .order('name')
 
   const [pagesRes, sectionsRes, invoicesRes, letterRes, assetsRes] = await Promise.all([
-    supabase.from('pages').select('id, order_index, template_type, status').eq('project_id', params.id).order('order_index'),
+    supabase.from('pages').select('id, order_index, template_type, content, status').eq('project_id', params.id).order('order_index'),
     supabase.from('sections').select('*').eq('project_id', params.id).order('page_start'),
     supabase.from('invoices').select('*').eq('project_id', params.id).order('milestone'),
     supabase.from('engagement_letters').select('*').eq('project_id', params.id).maybeSingle(),
     supabase.from('project_assets').select('*, profiles(name)').eq('project_id', params.id).order('created_at', { ascending: false }),
   ])
-  const pages = pagesRes.data as Pick<Page, 'id' | 'order_index' | 'template_type' | 'status'>[] | null
+  const pages = pagesRes.data as Pick<Page, 'id' | 'order_index' | 'template_type' | 'content' | 'status'>[] | null
   const sections = sectionsRes.data as Section[] | null
   const invoices = invoicesRes.data as Invoice[] | null
   const engagementLetter = letterRes.data as EngagementLetter | null
@@ -179,7 +179,7 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold" style={{ color: 'var(--accent)' }}>Sections</h2>
-          <SectionManager projectId={params.id} totalPages={totalPages} existingSections={sections ?? []} />
+          <SectionManager projectId={params.id} pages={pages ?? []} existingSections={sections ?? []} />
         </div>
         {!sections || sections.length === 0 ? (
           <div className="card text-center py-10" style={{ color: 'var(--text-muted)' }}>
@@ -188,7 +188,7 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
         ) : (
           <div className="space-y-3">
             {sections.map((section: Section) => (
-              <SectionRow key={section.id} section={section} />
+              <SectionRow key={section.id} section={section} pages={pages ?? []} allSections={sections} />
             ))}
           </div>
         )}

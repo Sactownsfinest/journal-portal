@@ -35,13 +35,29 @@ export async function POST(req: Request) {
 
   if (letterErr) return NextResponse.json({ error: letterErr.message }, { status: 500 })
 
-  // Keep project at 'awaiting_deposit' — admin will confirm deposit receipt
-  // (already set when letter was sent; no change needed unless it was somehow draft)
-  await supabase
-    .from('projects')
-    .update({ status: 'awaiting_deposit' })
-    .eq('id', projectId)
-    .eq('status', 'draft') // only update if still draft (no-op if already awaiting_deposit)
+  // Fetch deposit amount to decide next project status
+  const { data: letterData } = await supabase
+    .from('engagement_letters')
+    .select('deposit_amount')
+    .eq('id', letterId)
+    .single()
 
-  return NextResponse.json({ success: true })
+  const depositAmount = letterData?.deposit_amount ?? 0
+
+  if (depositAmount > 0) {
+    // Require deposit — set to awaiting_deposit (no-op if already there)
+    await supabase
+      .from('projects')
+      .update({ status: 'awaiting_deposit' })
+      .eq('id', projectId)
+      .in('status', ['draft', 'awaiting_deposit'])
+  } else {
+    // No deposit required — advance directly to in_progress
+    await supabase
+      .from('projects')
+      .update({ status: 'in_progress' })
+      .eq('id', projectId)
+  }
+
+  return NextResponse.json({ success: true, depositRequired: depositAmount > 0 })
 }

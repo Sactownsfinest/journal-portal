@@ -1,32 +1,32 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import HTMLFlipBook from 'react-pageflip'
 import type { Page } from '@/types'
 
-// Must match DesignerCanvas constants
+// Native canvas design size — must match DesignerCanvas
 const CANVAS_W = 420
 const CANVAS_H = 595
-
-// Flipbook display dimensions (one page of the spread)
-const DISPLAY_W = 320
-const DISPLAY_H = 454
-
-// Scale factor so the full canvas fits exactly in the flipbook page
-const CANVAS_SCALE = Math.min(DISPLAY_W / CANVAS_W, DISPLAY_H / CANVAS_H)
+const ASPECT = CANVAS_H / CANVAS_W   // ≈ 1.417
 
 interface Props {
   pages: Page[]
 }
 
-function FlipPage({ page, pageNumber }: { page: Page; pageNumber: number }) {
+function FlipPage({ page, pageNumber, displayW, displayH }: {
+  page: Page
+  pageNumber: number
+  displayW: number
+  displayH: number
+}) {
   const c = page.content
   const isCanvas = !!(c.elements && c.elements.length > 0)
+  const canvasScale = Math.min(displayW / CANVAS_W, displayH / CANVAS_H)
 
   const baseStyle: React.CSSProperties = {
     background: '#fdf8f0',
-    width: DISPLAY_W,
-    height: DISPLAY_H,
+    width: displayW,
+    height: displayH,
     fontFamily: 'Georgia, serif',
     position: 'relative',
     overflow: 'hidden',
@@ -44,8 +44,8 @@ function FlipPage({ page, pageNumber }: { page: Page; pageNumber: number }) {
           )}
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)' }} />
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'white', textAlign: 'center', padding: '32px' }}>
-            {c.title_text && <h1 style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 8 }}>{c.title_text}</h1>}
-            {c.subtitle_text && <p style={{ fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.7 }}>{c.subtitle_text}</p>}
+            {c.title_text && <h1 style={{ fontSize: Math.round(22 * canvasScale), fontWeight: 'bold', marginBottom: 8 }}>{c.title_text}</h1>}
+            {c.subtitle_text && <p style={{ fontSize: Math.round(11 * canvasScale), letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.7 }}>{c.subtitle_text}</p>}
           </div>
         </div>
       )}
@@ -65,10 +65,7 @@ function FlipPage({ page, pageNumber }: { page: Page; pageNumber: number }) {
             }
           </div>
           <div style={{ flex: 1, padding: 16, order: c.image_side === 'right' ? 1 : 2 }}>
-            {c.body_text
-              ? <p style={{ fontSize: 9, color: '#3a2e1a', lineHeight: 1.8 }}>{c.body_text}</p>
-              : null
-            }
+            {c.body_text && <p style={{ fontSize: 9, color: '#3a2e1a', lineHeight: 1.8 }}>{c.body_text}</p>}
           </div>
         </div>
       )}
@@ -86,9 +83,7 @@ function FlipPage({ page, pageNumber }: { page: Page; pageNumber: number }) {
         </div>
       )}
 
-      {/* ── Free-form canvas pages ──
-          Render at the native 420×595 design size, then CSS-scale down to
-          DISPLAY_W×DISPLAY_H so every element is pixel-perfect. */}
+      {/* ── Free-form canvas pages ── */}
       {isCanvas && (
         <div
           style={{
@@ -98,7 +93,7 @@ function FlipPage({ page, pageNumber }: { page: Page; pageNumber: number }) {
             width: CANVAS_W,
             height: CANVAS_H,
             transformOrigin: 'top left',
-            transform: `scale(${CANVAS_SCALE})`,
+            transform: `scale(${canvasScale})`,
             background: c.bg_color || '#fdf8f0',
             overflow: 'hidden',
           }}
@@ -144,10 +139,7 @@ function FlipPage({ page, pageNumber }: { page: Page; pageNumber: number }) {
             if (el.type === 'image') {
               return (
                 <div key={el.id} style={{ ...base, background: '#E8E0D0' }}>
-                  {el.image_url
-                    ? <img src={el.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: el.opacity ?? 1 }} />
-                    : null
-                  }
+                  {el.image_url && <img src={el.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: el.opacity ?? 1 }} />}
                 </div>
               )
             }
@@ -169,7 +161,7 @@ function FlipPage({ page, pageNumber }: { page: Page; pageNumber: number }) {
       )}
 
       {/* Page number */}
-      <div style={{ position: 'absolute', bottom: 8, left: 0, right: 0, textAlign: 'center', fontSize: 8, color: '#c8b89a', zIndex: 10 }}>
+      <div style={{ position: 'absolute', bottom: 6, left: 0, right: 0, textAlign: 'center', fontSize: 8, color: '#c8b89a', zIndex: 10 }}>
         {pageNumber}
       </div>
     </div>
@@ -178,73 +170,96 @@ function FlipPage({ page, pageNumber }: { page: Page; pageNumber: number }) {
 
 export default function FlipbookViewer({ pages }: Props) {
   const bookRef = useRef<any>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [dims, setDims] = useState<{ w: number; h: number; portrait: boolean } | null>(null)
+
+  useEffect(() => {
+    function compute() {
+      const containerW = containerRef.current?.clientWidth ?? window.innerWidth
+      const PADDING = 32 // total horizontal padding inside the container
+
+      // On narrow screens use portrait (single page), on wide use spread (two pages)
+      const usePortrait = containerW < 560
+
+      let pageW: number
+      if (usePortrait) {
+        // Single page — fill available width
+        pageW = Math.min(containerW - PADDING, 360)
+      } else {
+        // Two-page spread — each page gets half the container
+        pageW = Math.min(Math.floor((containerW - PADDING) / 2), 360)
+      }
+
+      const pageH = Math.round(pageW * ASPECT)
+      setDims({ w: pageW, h: pageH, portrait: usePortrait })
+    }
+
+    compute()
+
+    const ro = new ResizeObserver(compute)
+    if (containerRef.current) ro.observe(containerRef.current)
+    return () => ro.disconnect()
+  }, [])
 
   if (pages.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-64 text-[#888]">
-        No pages to display
-      </div>
-    )
+    return <div className="flex items-center justify-center h-64 text-[#888]">No pages to display</div>
   }
 
   // react-pageflip needs even number of pages for spread view
   const displayPages = pages.length % 2 !== 0 ? [...pages, null] : pages
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      {/* @ts-ignore — HTMLFlipBook types are loose */}
-      <HTMLFlipBook
-        ref={bookRef}
-        width={DISPLAY_W}
-        height={DISPLAY_H}
-        size="fixed"
-        minWidth={200}
-        maxWidth={500}
-        minHeight={300}
-        maxHeight={700}
-        showCover={true}
-        flippingTime={700}
-        style={{ margin: '0 auto' }}
-        className="shadow-2xl"
-        startPage={0}
-        drawShadow={true}
-        usePortrait={false}
-        startZIndex={0}
-        autoSize={false}
-        clickEventForward={true}
-        useMouseEvents={true}
-        swipeDistance={30}
-        showPageCorners={true}
-        disableFlipByClick={false}
-        mobileScrollSupport={true}
-      >
-        {displayPages.map((page, idx) =>
-          page ? (
-            <div key={page.id} style={{ width: DISPLAY_W, height: DISPLAY_H, overflow: 'hidden' }}>
-              <FlipPage page={page} pageNumber={idx + 1} />
-            </div>
-          ) : (
-            <div key="blank-end" style={{ background: '#fdf8f0', width: DISPLAY_W, height: DISPLAY_H }} />
-          )
-        )}
-      </HTMLFlipBook>
+    <div ref={containerRef} className="w-full flex flex-col items-center gap-4">
+      {dims && (
+        <>
+          {/* @ts-ignore */}
+          <HTMLFlipBook
+            ref={bookRef}
+            width={dims.w}
+            height={dims.h}
+            size="fixed"
+            minWidth={dims.w}
+            maxWidth={dims.w}
+            minHeight={dims.h}
+            maxHeight={dims.h}
+            showCover={true}
+            flippingTime={700}
+            style={{ margin: '0 auto' }}
+            className="shadow-2xl"
+            startPage={0}
+            drawShadow={true}
+            usePortrait={dims.portrait}
+            startZIndex={0}
+            autoSize={false}
+            clickEventForward={true}
+            useMouseEvents={true}
+            swipeDistance={30}
+            showPageCorners={true}
+            disableFlipByClick={false}
+            mobileScrollSupport={true}
+          >
+            {displayPages.map((page, idx) =>
+              page ? (
+                <div key={page.id} style={{ width: dims.w, height: dims.h, overflow: 'hidden' }}>
+                  <FlipPage page={page} pageNumber={idx + 1} displayW={dims.w} displayH={dims.h} />
+                </div>
+              ) : (
+                <div key="blank-end" style={{ background: '#fdf8f0', width: dims.w, height: dims.h }} />
+              )
+            )}
+          </HTMLFlipBook>
 
-      {/* Navigation */}
-      <div className="flex items-center gap-4 text-sm text-[#888]">
-        <button
-          onClick={() => bookRef.current?.pageFlip()?.flipPrev()}
-          className="btn-secondary text-xs px-3 py-1.5"
-        >
-          ← Prev
-        </button>
-        <span>{pages.length} pages</span>
-        <button
-          onClick={() => bookRef.current?.pageFlip()?.flipNext()}
-          className="btn-secondary text-xs px-3 py-1.5"
-        >
-          Next →
-        </button>
-      </div>
+          <div className="flex items-center gap-4 text-sm text-[#888]">
+            <button onClick={() => bookRef.current?.pageFlip()?.flipPrev()} className="btn-secondary text-xs px-3 py-1.5">
+              ← Prev
+            </button>
+            <span>{pages.length} pages</span>
+            <button onClick={() => bookRef.current?.pageFlip()?.flipNext()} className="btn-secondary text-xs px-3 py-1.5">
+              Next →
+            </button>
+          </div>
+        </>
+      )}
     </div>
   )
 }

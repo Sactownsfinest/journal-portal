@@ -5,12 +5,56 @@ import type { CanvasElement } from '@/types'
 import ColorPicker from './ColorPicker'
 import ImageUploader from './ImageUploader'
 
-const FONTS = [
-  { label: 'Georgia (Serif)', value: 'Georgia' },
-  { label: 'Playfair Display', value: "'Playfair Display', serif" },
-  { label: 'Arial (Sans)', value: 'Arial, sans-serif' },
-  { label: 'Courier (Mono)', value: "'Courier New', monospace" },
+const FONT_GROUPS = [
+  {
+    group: 'Elegant Serif',
+    fonts: [
+      { label: 'Playfair Display', value: "'Playfair Display', serif" },
+      { label: 'Cormorant Garamond', value: "'Cormorant Garamond', serif" },
+      { label: 'EB Garamond', value: "'EB Garamond', serif" },
+      { label: 'Lora', value: "'Lora', serif" },
+      { label: 'Merriweather', value: "'Merriweather', serif" },
+      { label: 'Libre Baskerville', value: "'Libre Baskerville', serif" },
+      { label: 'Spectral', value: "'Spectral', serif" },
+      { label: 'Georgia', value: 'Georgia, serif' },
+    ],
+  },
+  {
+    group: 'Display',
+    fonts: [
+      { label: 'Cinzel', value: "'Cinzel', serif" },
+    ],
+  },
+  {
+    group: 'Script & Handwritten',
+    fonts: [
+      { label: 'Dancing Script', value: "'Dancing Script', cursive" },
+      { label: 'Great Vibes', value: "'Great Vibes', cursive" },
+      { label: 'Sacramento', value: "'Sacramento', cursive" },
+      { label: 'Satisfy', value: "'Satisfy', cursive" },
+    ],
+  },
+  {
+    group: 'Modern Sans',
+    fonts: [
+      { label: 'Montserrat', value: "'Montserrat', sans-serif" },
+      { label: 'Raleway', value: "'Raleway', sans-serif" },
+      { label: 'Josefin Sans', value: "'Josefin Sans', sans-serif" },
+      { label: 'Nunito', value: "'Nunito', sans-serif" },
+      { label: 'Open Sans', value: "'Open Sans', sans-serif" },
+      { label: 'Arial', value: 'Arial, sans-serif' },
+    ],
+  },
+  {
+    group: 'Monospace',
+    fonts: [
+      { label: 'Courier New', value: "'Courier New', monospace" },
+    ],
+  },
 ]
+
+// Flat list for selected-value lookup
+const ALL_FONTS = FONT_GROUPS.flatMap(g => g.fonts)
 
 interface Props {
   element: CanvasElement
@@ -114,15 +158,73 @@ export default function PropertiesPanel({ element, projectId, onChange, onDelete
         <>
           <div>
             <label className="label">Font</label>
-            <select
-              className="input text-sm"
-              value={element.font_family ?? 'Georgia'}
-              onChange={e => onChange({ font_family: e.target.value })}
+            {/* Selected font preview */}
+            {element.font_family && (
+              <div
+                className="rounded-xl px-3 py-2 mb-2 text-center"
+                style={{ background: 'var(--accent-dim)', border: '1px solid rgba(184,131,42,0.3)' }}
+              >
+                <span
+                  style={{ fontFamily: element.font_family, fontSize: 22, color: 'var(--accent)' }}
+                >
+                  The quick brown fox
+                </span>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                  {ALL_FONTS.find(f => f.value === element.font_family)?.label ?? element.font_family}
+                </p>
+              </div>
+            )}
+            {/* Scrollable grouped list */}
+            <div
+              className="overflow-y-auto rounded-xl"
+              style={{ border: '1px solid var(--border)', maxHeight: 280 }}
             >
-              {FONTS.map(f => (
-                <option key={f.value} value={f.value}>{f.label}</option>
+              {FONT_GROUPS.map((group, gi) => (
+                <div key={group.group}>
+                  <div
+                    className="px-3 py-1.5 text-xs font-bold tracking-widest uppercase sticky top-0"
+                    style={{ color: 'var(--text-muted)', background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}
+                  >
+                    {group.group}
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 p-1">
+                    {group.fonts.map(f => {
+                      const isSelected = (element.font_family ?? "'Playfair Display', serif") === f.value
+                      return (
+                        <button
+                          key={f.value}
+                          type="button"
+                          onClick={() => onChange({ font_family: f.value })}
+                          className="rounded-lg p-2 text-center transition-all"
+                          style={{
+                            border: '1px solid',
+                            borderColor: isSelected ? 'rgba(184,131,42,0.5)' : 'transparent',
+                            background: isSelected ? 'var(--accent-dim)' : 'var(--surface)',
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontFamily: f.value,
+                              fontSize: 18,
+                              lineHeight: 1.2,
+                              color: isSelected ? 'var(--accent)' : 'var(--text)',
+                            }}
+                          >
+                            Aa
+                          </div>
+                          <div
+                            className="text-[10px] mt-1 truncate"
+                            style={{ color: isSelected ? 'var(--accent)' : 'var(--text-muted)' }}
+                          >
+                            {f.label}
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
               ))}
-            </select>
+            </div>
           </div>
 
           <div>

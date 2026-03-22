@@ -15,6 +15,7 @@ interface Props {
 export default function EngagementLetterGate({ letter, projectId, projectTitle, clientName }: Props) {
   const [accepting, setAccepting] = useState(false)
   const [accepted, setAccepted] = useState(false)
+  const [depositRequired, setDepositRequired] = useState(letter.deposit_amount > 0)
   const [error, setError] = useState('')
 
   async function handleAccept() {
@@ -35,10 +36,18 @@ export default function EngagementLetterGate({ letter, projectId, projectTitle, 
       return
     }
 
+    setDepositRequired(data.depositRequired ?? false)
+
+    if (!data.depositRequired) {
+      // No deposit needed — reload to show the portal
+      window.location.reload()
+      return
+    }
+
     setAccepted(true)
   }
 
-  if (accepted) {
+  if (accepted && depositRequired) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-start px-4 py-12">
         <div className="w-full max-w-2xl space-y-6">
@@ -62,33 +71,31 @@ export default function EngagementLetterGate({ letter, projectId, projectTitle, 
           </div>
 
           {/* Deposit card */}
-          {letter.deposit_amount > 0 && (
+          <div
+            className="rounded-2xl overflow-hidden"
+            style={{ border: '1px solid rgba(212,175,55,0.3)', background: 'var(--card)' }}
+          >
             <div
-              className="rounded-2xl overflow-hidden"
-              style={{ border: '1px solid rgba(212,175,55,0.3)', background: 'var(--card)' }}
+              className="px-6 py-4"
+              style={{ borderBottom: '1px solid rgba(212,175,55,0.15)', background: 'rgba(212,175,55,0.05)' }}
             >
-              <div
-                className="px-6 py-4"
-                style={{ borderBottom: '1px solid rgba(212,175,55,0.15)', background: 'rgba(212,175,55,0.05)' }}
-              >
-                <p className="font-semibold" style={{ color: 'var(--accent)' }}>Submit Your Deposit</p>
-              </div>
-              <div className="px-6 py-5 flex items-center justify-between gap-6 flex-wrap">
-                <div>
-                  <p className="font-medium mb-1">Secure your spot &amp; let&apos;s get to work</p>
-                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                    A deposit of{' '}
-                    <span style={{ color: 'var(--accent)' }}>${letter.deposit_amount.toLocaleString()}</span>{' '}
-                    is required to begin your journal.
-                  </p>
-                </div>
-                <DepositCheckoutButton
-                  projectId={projectId}
-                  depositAmount={letter.deposit_amount}
-                />
-              </div>
+              <p className="font-semibold" style={{ color: 'var(--accent)' }}>Submit Your Deposit</p>
             </div>
-          )}
+            <div className="px-6 py-5 flex items-center justify-between gap-6 flex-wrap">
+              <div>
+                <p className="font-medium mb-1">Secure your spot &amp; let&apos;s get to work</p>
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                  A deposit of{' '}
+                  <span style={{ color: 'var(--accent)' }}>${letter.deposit_amount.toLocaleString()}</span>{' '}
+                  is required to begin your journal.
+                </p>
+              </div>
+              <DepositCheckoutButton
+                projectId={projectId}
+                depositAmount={letter.deposit_amount}
+              />
+            </div>
+          </div>
         </div>
       </div>
     )

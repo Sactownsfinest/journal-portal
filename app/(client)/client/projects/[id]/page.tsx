@@ -38,10 +38,23 @@ export default async function ClientProjectPage({
 
   if (!project) notFound()
 
-  // If stuck in awaiting_deposit, check Stripe for a completed session and sync DB.
+  // If stuck in awaiting_deposit, check Stripe or handle zero-deposit case
   if (project.status === 'awaiting_deposit') {
-    const synced = await syncDepositIfPaid(params.id)
-    if (synced) project.status = 'in_progress'
+    // Fetch engagement letter to check deposit amount
+    const { data: letterCheck } = await supabase
+      .from('engagement_letters')
+      .select('deposit_amount, status')
+      .eq('project_id', params.id)
+      .maybeSingle()
+
+    if (letterCheck?.status === 'accepted' && (letterCheck?.deposit_amount ?? 0) === 0) {
+      // No deposit required — advance to in_progress
+      await supabase.from('projects').update({ status: 'in_progress' }).eq('id', params.id)
+      project.status = 'in_progress'
+    } else {
+      const synced = await syncDepositIfPaid(params.id)
+      if (synced) project!.status = 'in_progress'
+    }
   }
 
   const [pagesRes, sectionsRes, invoicesRes, letterRes, assetsRes] = await Promise.all([
