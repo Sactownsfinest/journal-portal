@@ -33,8 +33,16 @@ export default function AuthCallbackPage() {
           return
         }
       } else if (accessToken) {
-        // Implicit / hash flow — Supabase client picks it up automatically
-        await supabase.auth.getSession()
+        // Implicit / hash flow — explicitly set the session from hash tokens
+        const refreshToken = hashParams.get('refresh_token') ?? ''
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        })
+        if (error) {
+          router.replace('/login?error=invite_expired')
+          return
+        }
       } else {
         router.replace('/login?error=invite_expired')
         return
