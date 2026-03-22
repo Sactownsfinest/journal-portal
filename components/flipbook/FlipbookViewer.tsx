@@ -11,8 +11,10 @@ interface Props {
 function FlipPage({ page, pageNumber }: { page: Page; pageNumber: number }) {
   const c = page.content
 
+  const isCanvas = !!(c.elements && c.elements.length > 0)
+
   const baseStyle: React.CSSProperties = {
-    background: '#fdf8f0',
+    background: isCanvas ? (c.bg_color || '#fdf8f0') : '#fdf8f0',
     width: '100%',
     height: '100%',
     fontFamily: 'Georgia, serif',
@@ -68,6 +70,74 @@ function FlipPage({ page, pageNumber }: { page: Page; pageNumber: number }) {
           {Array.from({ length: c.lines_count ?? 15 }).map((_, i) => (
             <div key={i} style={{ height: 1, background: 'rgba(200,185,154,0.6)', marginBottom: 18 }} />
           ))}
+        </div>
+      )}
+
+      {/* Free-form canvas elements */}
+      {c.elements && c.elements.length > 0 && (
+        <div style={{ position: 'absolute', inset: 0, background: c.bg_color || 'transparent' }}>
+          {c.elements.map(el => {
+            const base: React.CSSProperties = {
+              position: 'absolute',
+              left: `${el.x}%`,
+              top: `${el.y}%`,
+              width: `${el.w}%`,
+              height: `${el.h}%`,
+              overflow: 'hidden',
+              boxSizing: 'border-box',
+            }
+
+            if (['heading', 'body', 'scripture', 'prompt'].includes(el.type)) {
+              const bgStyle = el.bg_color
+                ? el.opacity !== undefined && el.opacity < 1
+                  ? `${el.bg_color}${Math.round((el.opacity ?? 1) * 255).toString(16).padStart(2, '0')}`
+                  : el.bg_color
+                : 'transparent'
+              return (
+                <div key={el.id} style={{ ...base, background: bgStyle, display: 'flex', alignItems: 'flex-start', padding: '4px' }}>
+                  <p style={{
+                    fontFamily: el.font_family || 'Georgia, serif',
+                    fontSize: `${el.font_size || 12}px`,
+                    fontWeight: el.font_weight || 'normal',
+                    fontStyle: el.italic ? 'italic' : 'normal',
+                    color: el.text_color || '#1A1208',
+                    textAlign: el.text_align || 'left',
+                    width: '100%',
+                    lineHeight: 1.5,
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                    margin: 0,
+                  }}>
+                    {el.text || ''}
+                  </p>
+                </div>
+              )
+            }
+
+            if (el.type === 'image') {
+              return (
+                <div key={el.id} style={{ ...base, background: '#E8E0D0' }}>
+                  {el.image_url
+                    ? <img src={el.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: el.opacity ?? 1 }} />
+                    : null
+                  }
+                </div>
+              )
+            }
+
+            if (el.type === 'lines') {
+              const count = el.lines_count ?? 8
+              return (
+                <div key={el.id} style={{ ...base, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '4px 0' }}>
+                  {Array.from({ length: count }).map((_, i) => (
+                    <div key={i} style={{ height: 1, background: el.line_color || '#C8B89A', width: '100%' }} />
+                  ))}
+                </div>
+              )
+            }
+
+            return null
+          })}
         </div>
       )}
 
