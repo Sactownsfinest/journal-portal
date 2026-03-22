@@ -89,8 +89,8 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
                 <stat.icon size={20} style={{ color: stat.color }} />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stat.value}</p>
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{stat.label}</p>
+                <p className="text-2xl font-bold" style={{ color: 'var(--accent)' }}>{stat.value}</p>
+                <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>{stat.label}</p>
               </div>
             </div>
           </div>
