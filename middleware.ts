@@ -4,8 +4,14 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Always allow login, set-password, and webhooks through first
-  if (pathname.startsWith('/login') || pathname.startsWith('/set-password') || pathname.startsWith('/api/webhooks') || pathname.startsWith('/_next')) {
+  // Always allow login, set-password, auth callback, and webhooks through first
+  if (
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/set-password') ||
+    pathname.startsWith('/auth/') ||
+    pathname.startsWith('/api/webhooks') ||
+    pathname.startsWith('/_next')
+  ) {
     return NextResponse.next()
   }
 
