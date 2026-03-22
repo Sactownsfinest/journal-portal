@@ -116,6 +116,17 @@ export default async function ClientProjectPage({
         </div>
       )}
 
+      {/* Progress bar — always visible at top when sections exist */}
+      {totalSections > 0 && (
+        <JournalProgressBar
+          approvalPct={approvalPct}
+          approvedSections={approvedSections}
+          totalSections={totalSections}
+          invoices={invoices ?? []}
+          totalPrice={project.total_price}
+        />
+      )}
+
       {/* Project Assets */}
       <ProjectAssets projectId={params.id} initialAssets={initialAssets as any} />
 
@@ -132,15 +143,6 @@ export default async function ClientProjectPage({
         </div>
       ) : (
         <>
-          {totalSections > 0 && (
-            <JournalProgressBar
-              approvalPct={approvalPct}
-              approvedSections={approvedSections}
-              totalSections={totalSections}
-              invoices={invoices ?? []}
-              totalPrice={project.total_price}
-            />
-          )}
 
           {pages && pages.length > 0 && (
             <div>
