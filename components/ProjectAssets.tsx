@@ -80,29 +80,68 @@ function isImage(asset: Asset) {
     /\.(jpg|jpeg|png|webp|gif|heic)$/i.test(asset.file_name))
 }
 
-// Fixed-position image tooltip shown while hovering a file row
+function isPdf(asset: Asset) {
+  return !!(asset.mime_type === 'application/pdf' ||
+    /\.pdf$/i.test(asset.file_name))
+}
+
+// Fixed-position tooltip shown while hovering a file row
 function FileTooltip({ asset, mouseY }: { asset: Asset; mouseY: number }) {
-  if (!isImage(asset)) return null
-  return (
-    <div
-      className="pointer-events-none fixed z-[100] rounded-2xl overflow-hidden shadow-2xl"
-      style={{
-        right: 420,
-        top: Math.min(mouseY - 80, window.innerHeight - 220),
-        width: 200,
-        background: 'var(--card)',
-        border: '1.5px solid var(--border)',
-        boxShadow: '0 8px 32px rgba(44,36,22,0.18)',
-      }}
-    >
-      <img src={asset.file_url} alt={asset.file_name}
-        style={{ width: '100%', height: 150, objectFit: 'cover', display: 'block' }} />
-      <div className="px-3 py-2">
-        <p className="text-xs font-semibold truncate" style={{ color: 'var(--text)' }}>{asset.file_name}</p>
-        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{formatBytes(asset.file_size)}</p>
+  const drawerWidth = Math.min(400, window.innerWidth)
+  const tooltipRight = drawerWidth + 12
+  const tooltipTop = Math.min(mouseY - 80, window.innerHeight - 260)
+
+  if (isImage(asset)) {
+    return (
+      <div
+        className="pointer-events-none fixed z-[100] rounded-2xl overflow-hidden shadow-2xl"
+        style={{
+          right: tooltipRight,
+          top: tooltipTop,
+          width: 200,
+          background: 'var(--card)',
+          border: '1.5px solid var(--border)',
+          boxShadow: '0 8px 32px rgba(44,36,22,0.18)',
+        }}
+      >
+        <img src={asset.file_url} alt={asset.file_name}
+          style={{ width: '100%', height: 150, objectFit: 'cover', display: 'block' }} />
+        <div className="px-3 py-2">
+          <p className="text-xs font-semibold truncate" style={{ color: 'var(--text)' }}>{asset.file_name}</p>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{formatBytes(asset.file_size)}</p>
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
+
+  if (isPdf(asset)) {
+    return (
+      <div
+        className="pointer-events-none fixed z-[100] rounded-2xl overflow-hidden shadow-2xl"
+        style={{
+          right: tooltipRight,
+          top: tooltipTop,
+          width: 240,
+          height: 320,
+          background: 'var(--card)',
+          border: '1.5px solid var(--border)',
+          boxShadow: '0 8px 32px rgba(44,36,22,0.18)',
+        }}
+      >
+        <iframe
+          src={`${asset.file_url}#toolbar=0&navpanes=0&scrollbar=0`}
+          style={{ width: '100%', height: '100%', border: 'none', pointerEvents: 'none' }}
+          title={asset.file_name}
+        />
+        <div className="absolute bottom-0 left-0 right-0 px-3 py-2"
+          style={{ background: 'rgba(255,255,255,0.9)', borderTop: '1px solid var(--border)' }}>
+          <p className="text-xs font-semibold truncate" style={{ color: 'var(--text)' }}>{asset.file_name}</p>
+        </div>
+      </div>
+    )
+  }
+
+  return null
 }
 
 // Slide-out drawer showing files for a category
@@ -209,10 +248,10 @@ function CategoryDrawer({ cat, assets, canDelete, uploading, onUpload, onDelete,
                   onMouseEnter={e => {
                     e.currentTarget.style.background = cat.bg
                     e.currentTarget.style.borderColor = cat.border
-                    if (isImage(asset)) setTooltip({ asset, y: e.clientY })
+                    if (isImage(asset) || isPdf(asset)) setTooltip({ asset, y: e.clientY })
                   }}
                   onMouseMove={e => {
-                    if (isImage(asset)) setTooltip({ asset, y: e.clientY })
+                    if (isImage(asset) || isPdf(asset)) setTooltip({ asset, y: e.clientY })
                   }}
                   onMouseLeave={e => {
                     e.currentTarget.style.background = 'rgba(44,36,22,0.02)'
@@ -324,36 +363,46 @@ export default function ProjectAssets({ projectId, initialAssets = [], canDelete
   }
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const files = Array.from(e.target.files ?? [])
+    if (files.length === 0) return
     const category = activeCategory.current
-    if (file.size > 50 * 1024 * 1024) { setError('File must be under 50 MB'); return }
+
+    const oversized = files.find(f => f.size > 50 * 1024 * 1024)
+    if (oversized) { setError(`"${oversized.name}" exceeds 50 MB limit`); return }
 
     setError('')
     setUploading(category)
-    const path = `${projectId}/${category}/${Date.now()}-${file.name}`
 
-    const { error: uploadErr } = await supabase.storage
-      .from('project-assets').upload(path, file, { upsert: false })
-    if (uploadErr) { setError(uploadErr.message); setUploading(null); return }
+    const userId = (await supabase.auth.getUser()).data.user?.id
+    const newAssets: Asset[] = []
 
-    const { data: urlData } = supabase.storage.from('project-assets').getPublicUrl(path)
-    const { data: asset, error: dbErr } = await supabase
-      .from('project_assets')
-      .insert({
-        project_id: projectId,
-        uploaded_by: (await supabase.auth.getUser()).data.user?.id,
-        category,
-        file_name: file.name,
-        file_url: urlData.publicUrl,
-        file_size: file.size,
-        mime_type: file.type,
-      })
-      .select('*, profiles(name)')
-      .single()
+    for (const file of files) {
+      const path = `${projectId}/${category}/${Date.now()}-${file.name}`
 
-    if (dbErr) setError(dbErr.message)
-    else if (asset) setAssets(prev => [asset as Asset, ...prev])
+      const { error: uploadErr } = await supabase.storage
+        .from('project-assets').upload(path, file, { upsert: false })
+      if (uploadErr) { setError(uploadErr.message); continue }
+
+      const { data: urlData } = supabase.storage.from('project-assets').getPublicUrl(path)
+      const { data: asset, error: dbErr } = await supabase
+        .from('project_assets')
+        .insert({
+          project_id: projectId,
+          uploaded_by: userId,
+          category,
+          file_name: file.name,
+          file_url: urlData.publicUrl,
+          file_size: file.size,
+          mime_type: file.type,
+        })
+        .select('*, profiles(name)')
+        .single()
+
+      if (dbErr) setError(dbErr.message)
+      else if (asset) newAssets.push(asset as Asset)
+    }
+
+    if (newAssets.length > 0) setAssets(prev => [...newAssets.reverse(), ...prev])
     setUploading(null)
   }
 
@@ -465,7 +514,7 @@ export default function ProjectAssets({ projectId, initialAssets = [], canDelete
         </div>
       )}
 
-      <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} />
+      <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileChange} />
     </div>
   )
 }
