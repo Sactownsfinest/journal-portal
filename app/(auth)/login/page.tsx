@@ -78,16 +78,7 @@ export default function LoginPage() {
           >
             <Sparkles size={26} style={{ color: '#B8832A' }} />
           </div>
-          <h1
-            className="text-3xl font-bold mb-1"
-            style={{
-              background: 'linear-gradient(135deg, #8A5E0A, #C9922A)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              textShadow: 'none',
-            }}
-          >
+          <h1 className="text-3xl font-bold mb-1 gold-text">
             Journal Portal
           </h1>
           <p className="text-sm" style={{ color: '#7A6A50' }}>Your custom journal workspace</p>
