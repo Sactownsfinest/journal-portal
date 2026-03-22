@@ -190,7 +190,7 @@ function SectionRow({ section }: { section: Section }) {
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="font-medium">{section.name}</h3>
+            <h3 className="font-medium" style={{ color: 'var(--accent)' }}>{section.name}</h3>
             <span
               className="text-xs px-2 py-0.5 rounded-full font-medium"
               style={{ color: s.color, background: s.bg }}

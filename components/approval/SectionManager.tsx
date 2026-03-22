@@ -66,7 +66,7 @@ export default function SectionManager({ projectId, totalPages, existingSections
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="w-full max-w-sm card">
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-semibold">Add Section</h3>
+              <h3 className="font-semibold" style={{ color: 'var(--accent)' }}>Add Section</h3>
               <button onClick={() => setOpen(false)} className="transition-colors hover:text-[#F8F4E3]" style={{ color: 'var(--text-muted)' }}>
                 <X size={18} />
               </button>

@@ -122,7 +122,7 @@ export default function EngagementLetterGate({ letter, projectId, projectTitle, 
           style={{ borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.02)' }}
         >
           <FileText size={16} style={{ color: 'var(--accent)' }} />
-          <span className="font-semibold">Project Scope &amp; Terms</span>
+          <span className="font-bold" style={{ color: 'var(--accent)' }}>Project Scope &amp; Terms</span>
           <span
             className="ml-auto text-xs px-2.5 py-1 rounded-full font-medium"
             style={{ background: 'rgba(251,191,36,0.1)', color: 'var(--warning)', border: '1px solid rgba(251,191,36,0.25)' }}

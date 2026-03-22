@@ -89,7 +89,7 @@ function SectionCard({ section, note, onNoteChange, onDecision, loading }: CardP
           <div className="flex items-center gap-2">
             {section.status === 'approved' && <CheckCircle size={16} style={{ color: 'var(--success)' }} />}
             {section.status === 'rejected' && <XCircle size={16} style={{ color: 'var(--danger)' }} />}
-            <h3 className="font-semibold">{section.name}</h3>
+            <h3 className="font-semibold" style={{ color: 'var(--accent)' }}>{section.name}</h3>
           </div>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
             Pages {section.page_start}–{section.page_end}

@@ -58,7 +58,7 @@ export default async function AdminDashboard() {
             </div>
             <span className="text-4xl font-bold gold-text">{totalProjects}</span>
           </div>
-          <p className="font-semibold" style={{ color: 'var(--text)' }}>Total Projects</p>
+          <p className="font-bold" style={{ color: 'var(--accent)' }}>Total Projects</p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>All journals created</p>
         </div>
         <div className="stat-card-violet">
@@ -68,7 +68,7 @@ export default async function AdminDashboard() {
             </div>
             <span className="text-4xl font-bold" style={{ color: 'var(--violet)' }}>{activeProjects}</span>
           </div>
-          <p className="font-semibold" style={{ color: 'var(--text)' }}>In Progress</p>
+          <p className="font-bold" style={{ color: 'var(--accent)' }}>In Progress</p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Currently active</p>
         </div>
         <div className="stat-card-teal">
@@ -78,7 +78,7 @@ export default async function AdminDashboard() {
             </div>
             <span className="text-4xl font-bold" style={{ color: 'var(--success)' }}>{completeProjects}</span>
           </div>
-          <p className="font-semibold" style={{ color: 'var(--text)' }}>Completed</p>
+          <p className="font-bold" style={{ color: 'var(--accent)' }}>Completed</p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Delivered to clients</p>
         </div>
       </div>
@@ -92,7 +92,7 @@ export default async function AdminDashboard() {
             <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-5" style={{ background: 'var(--accent-dim)', border: '1px solid rgba(212,175,55,0.25)' }}>
               <Sparkles size={32} style={{ color: 'var(--accent)' }} />
             </div>
-            <p className="text-lg font-semibold mb-1" style={{ color: 'var(--text)' }}>No projects yet</p>
+            <p className="text-lg font-bold mb-1 gold-text">No projects yet</p>
             <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>Create your first bespoke journal to get started</p>
             <CreateProjectModal clients={clients ?? []} />
           </div>
@@ -126,7 +126,7 @@ async function ProjectCard({ project }: { project: Project & { profiles: { name:
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-1 h-7 rounded-full shrink-0" style={{ background: accentColor }} />
-            <h3 className="font-bold text-lg truncate" style={{ color: 'var(--text)' }}>{project.title}</h3>
+            <h3 className="font-bold text-lg truncate" style={{ color: 'var(--accent)' }}>{project.title}</h3>
             <span className={statusBadge[project.status] ?? 'badge-gold'}>{statusLabel[project.status] ?? project.status}</span>
           </div>
           <p className="text-sm ml-4" style={{ color: 'var(--text-muted)' }}>
