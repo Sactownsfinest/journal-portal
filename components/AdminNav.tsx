@@ -25,23 +25,23 @@ export default function AdminNav({ adminName }: { adminName: string }) {
         boxShadow: '0 1px 12px rgba(44,36,22,0.06)',
       }}
     >
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div className="flex items-center gap-4 sm:gap-8">
           <Link href="/admin/dashboard" className="flex items-center gap-2.5">
             <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center"
+              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
               style={{ background: 'var(--accent-dim)', border: '1.5px solid rgba(184,131,42,0.25)' }}
             >
               <Sparkles size={15} style={{ color: 'var(--accent)' }} />
             </div>
-            <span className="font-bold text-lg tracking-wide gold-text">
+            <span className="font-bold text-base sm:text-lg tracking-wide gold-text hidden xs:block">
               Journal Portal
             </span>
           </Link>
 
           <Link
             href="/admin/dashboard"
-            className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg transition-all"
+            className="hidden sm:flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg transition-all"
             style={pathname === '/admin/dashboard'
               ? { background: 'var(--accent-dim)', color: 'var(--accent)', border: '1px solid rgba(184,131,42,0.2)' }
               : { color: 'var(--text-muted)', border: '1px solid transparent' }
@@ -52,19 +52,19 @@ export default function AdminNav({ adminName }: { adminName: string }) {
           </Link>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col items-end">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <div className="hidden sm:flex flex-col items-end">
             <span className="text-sm font-medium" style={{ color: 'var(--text)' }}>{adminName}</span>
             <span className="badge-gold" style={{ fontSize: '10px', padding: '1px 8px' }}>Admin</span>
           </div>
-          <div style={{ width: '1px', height: '24px', background: 'var(--border-strong)' }} />
+          <div className="hidden sm:block" style={{ width: '1px', height: '24px', background: 'var(--border-strong)' }} />
           <button
             onClick={handleLogout}
             className="flex items-center gap-1.5 text-sm transition-all px-3 py-1.5 rounded-lg"
             style={{ color: 'var(--text-muted)' }}
           >
             <LogOut size={14} />
-            Sign out
+            <span className="hidden sm:inline">Sign out</span>
           </button>
         </div>
       </div>

@@ -77,10 +77,10 @@ export default async function ClientProjectPage({
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6 md:space-y-10">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold gold-text">{project.title}</h1>
+        <h1 className="text-2xl md:text-3xl font-bold gold-text">{project.title}</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text)' }}>Your custom journal</p>
       </div>
 

@@ -39,7 +39,7 @@ export default function JournalProgressBar({
       }}
     >
       {/* Heading row */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
         <div>
           <h2 className="font-semibold text-lg" style={{ color: 'var(--accent)' }}>Your Journal Progress</h2>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
@@ -149,8 +149,8 @@ export default function JournalProgressBar({
             })}
           </div>
 
-          {/* Milestone labels */}
-          <div className="relative" style={{ marginTop: 8 }}>
+          {/* Milestone labels — hidden on small screens, visible sm+ */}
+          <div className="relative hidden sm:block" style={{ marginTop: 8 }}>
             {MILESTONES.map(ms => {
               const inv = invoices.find(i => i.milestone === ms)
               const isPaid = inv?.status === 'paid'
@@ -172,6 +172,33 @@ export default function JournalProgressBar({
                   )}
                   {isSent && !isPaid && !inv?.hosted_invoice_url && <span className="text-xs font-medium" style={{ color: 'var(--warning)', whiteSpace: 'nowrap' }}>Invoice sent</span>}
                   {!isPaid && !isSent && <span className="text-xs" style={{ color: isReached ? 'var(--warning)' : 'var(--text-muted)', whiteSpace: 'nowrap' }}>{isReached ? 'Generating…' : 'Upcoming'}</span>}
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Mobile milestone summary — compact list shown only on small screens */}
+          <div className="sm:hidden mt-4 space-y-2">
+            {MILESTONES.map(ms => {
+              const inv = invoices.find(i => i.milestone === ms)
+              const isPaid = inv?.status === 'paid'
+              const isSent = inv?.status === 'sent'
+              const isReached = approvalPct >= ms
+              return (
+                <div key={ms} className="flex items-center justify-between text-xs">
+                  <span className="font-bold" style={{ color: isPaid ? 'var(--success)' : isSent ? 'var(--warning)' : isReached ? 'var(--accent)' : 'var(--text-muted)' }}>
+                    {ms}% {milestoneAmount && `— ${milestoneAmount}`}
+                  </span>
+                  {isPaid && <span style={{ color: 'var(--success)' }}>Paid ✓</span>}
+                  {isSent && !isPaid && inv?.hosted_invoice_url && (
+                    <a href={inv.hosted_invoice_url} target="_blank" rel="noopener noreferrer"
+                      className="font-bold px-2 py-1 rounded-lg"
+                      style={{ background: 'rgba(74,158,127,0.10)', color: 'var(--success)', border: '1px solid rgba(74,158,127,0.35)' }}>
+                      Pay Now
+                    </a>
+                  )}
+                  {isSent && !isPaid && !inv?.hosted_invoice_url && <span style={{ color: 'var(--warning)' }}>Invoice sent</span>}
+                  {!isPaid && !isSent && <span style={{ color: 'var(--text-muted)' }}>{isReached ? 'Generating…' : 'Upcoming'}</span>}
                 </div>
               )
             })}

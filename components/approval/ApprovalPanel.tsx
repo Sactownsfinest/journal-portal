@@ -162,8 +162,8 @@ function SectionCard({ section, note, onNoteChange, onDecision, loading, hasPage
 
   return (
     <div className="card transition-all" style={{ borderColor }}>
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 min-w-0">
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+        <div className="flex-1 min-w-0 w-full">
           <div className="flex items-center gap-2 flex-wrap">
             {section.status === 'approved' && <CheckCircle size={16} style={{ color: 'var(--success)' }} />}
             {section.status === 'rejected' && <XCircle size={16} style={{ color: 'var(--danger)' }} />}
@@ -190,7 +190,7 @@ function SectionCard({ section, note, onNoteChange, onDecision, loading, hasPage
           )}
         </div>
 
-        <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+        <div className="flex items-center gap-2 shrink-0 flex-wrap justify-start sm:justify-end w-full sm:w-auto">
           {/* Preview button — always available when pages exist */}
           {hasPages && (
             <button

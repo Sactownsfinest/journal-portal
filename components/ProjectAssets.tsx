@@ -134,7 +134,7 @@ function CategoryDrawer({ cat, assets, canDelete, uploading, onUpload, onDelete,
       <div
         className="fixed right-0 top-0 h-full z-50 flex flex-col"
         style={{
-          width: 400,
+          width: 'min(400px, 100vw)',
           background: 'var(--card)',
           borderLeft: `2px solid ${cat.border}`,
           boxShadow: '-8px 0 40px rgba(44,36,22,0.15)',

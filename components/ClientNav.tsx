@@ -18,17 +18,17 @@ export default function ClientNav({ clientName }: { clientName: string }) {
       <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2 font-bold gold-text">
           <Sparkles size={20} style={{ color: 'var(--accent)' }} />
-          My Journal
+          <span>My Journal</span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Welcome, {clientName}</span>
+          <span className="hidden sm:block text-sm" style={{ color: 'var(--text-muted)' }}>Welcome, {clientName}</span>
           <button
             onClick={handleLogout}
             className="flex items-center gap-1.5 text-sm transition-colors hover:text-[#F87171]"
             style={{ color: 'var(--text-muted)' }}
           >
             <LogOut size={15} />
-            Sign out
+            <span className="hidden sm:inline">Sign out</span>
           </button>
         </div>
       </div>

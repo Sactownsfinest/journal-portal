@@ -62,7 +62,7 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-sm mb-2" style={{ color: 'var(--text-muted)' }}>
             <Link href="/admin/dashboard" className="hover:text-[#D4AF37] transition-colors">Dashboard</Link>
@@ -99,7 +99,7 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: 'Pages', value: totalPages, icon: BookOpen, color: 'var(--accent)', bg: 'var(--accent-dim)' },
           { label: 'Sections', value: totalSections, icon: Clock, color: 'var(--text-muted)', bg: 'rgba(42,74,107,0.4)' },
@@ -122,7 +122,7 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
 
       {/* Approval progress */}
       <div className="card-glow">
-        <div className="flex justify-between items-center mb-3">
+        <div className="flex flex-wrap justify-between items-center gap-2 mb-3">
           <h2 className="font-bold text-lg" style={{ color: 'var(--accent)' }}>Overall Approval Progress</h2>
           <span className="font-bold text-2xl gold-text">{approvalPct}%</span>
         </div>
@@ -137,7 +137,7 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
             }}
           />
         </div>
-        <div className="flex justify-between items-center mt-3">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mt-3">
           <div className="flex flex-col gap-1.5">
             <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
               {approvedSections} of {totalSections} sections approved

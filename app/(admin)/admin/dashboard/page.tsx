@@ -34,7 +34,7 @@ export default async function AdminDashboard() {
       >
         <div style={{ position: 'absolute', top: '-40px', right: '-20px', width: '220px', height: '220px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(184,131,42,0.10) 0%, transparent 70%)', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', bottom: '-30px', left: '35%', width: '160px', height: '160px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,107,174,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div className="relative flex items-center justify-between gap-6">
+        <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
           <div>
             <div className="flex items-center gap-2 mb-3">
               <Star size={13} style={{ color: 'var(--accent)' }} fill="currentColor" />
@@ -50,7 +50,7 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="stat-card-gold">
           <div className="flex items-center justify-between mb-4">
             <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'var(--accent-dim)', border: '1.5px solid rgba(184,131,42,0.2)' }}>
@@ -122,9 +122,9 @@ async function ProjectCard({ project }: { project: Project & { profiles: { name:
 
   return (
     <div className="rounded-2xl p-6" style={{ background: 'var(--card)', border: '1.5px solid var(--border)', boxShadow: '0 2px 12px rgba(44,36,22,0.06)' }}>
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 mb-2">
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+        <div className="flex-1 min-w-0 w-full">
+          <div className="flex items-center gap-3 mb-2 flex-wrap">
             <div className="w-1 h-7 rounded-full shrink-0" style={{ background: accentColor }} />
             <h3 className="font-bold text-lg truncate" style={{ color: 'var(--accent)' }}>{project.title}</h3>
             <span className={statusBadge[project.status] ?? 'badge-gold'}>{statusLabel[project.status] ?? project.status}</span>
@@ -142,12 +142,10 @@ async function ProjectCard({ project }: { project: Project & { profiles: { name:
             </div>
           )}
         </div>
-        <div className="flex flex-col items-end gap-3 shrink-0">
-          <div className="text-right">
+        <div className="flex sm:flex-col flex-row items-center sm:items-end justify-between sm:justify-start w-full sm:w-auto gap-3 shrink-0">
+          <div className="text-left sm:text-right">
             <p className="text-xs uppercase tracking-wider mb-0.5" style={{ color: 'var(--text-muted)' }}>Total</p>
-            <p className="font-bold text-xl gold-text">
-              ${project.total_price.toLocaleString()}
-            </p>
+            <p className="font-bold text-xl gold-text">${project.total_price.toLocaleString()}</p>
             {paidAmount > 0 && <p className="text-xs mt-0.5" style={{ color: 'var(--success)' }}>${paidAmount.toLocaleString()} paid</p>}
           </div>
           <div className="flex gap-2">
