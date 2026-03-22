@@ -137,7 +137,7 @@ export default async function ClientProjectPage({
       )}
 
       {/* Project Assets */}
-      <ProjectAssets projectId={params.id} initialAssets={initialAssets as any} />
+      <ProjectAssets projectId={params.id} initialAssets={initialAssets as any} canDelete={false} />
 
       {/* Flipbook preview — only when ready for review */}
       {isReadyForReview && pages && pages.length > 0 && (
