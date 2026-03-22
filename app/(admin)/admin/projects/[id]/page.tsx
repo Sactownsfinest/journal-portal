@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { syncDepositIfPaid } from '@/lib/sync-deposit'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { BookOpen, Pencil, CheckCircle, XCircle, Clock, Download } from 'lucide-react'
@@ -20,6 +21,12 @@ export default async function AdminProjectPage({ params }: { params: { id: strin
     .single() as { data: (Project & { profiles: { name: string; email: string } }) | null }
 
   if (!project) notFound()
+
+  // Sync deposit status if stuck
+  if (project.status === 'awaiting_deposit') {
+    const synced = await syncDepositIfPaid(params.id)
+    if (synced) project.status = 'in_progress'
+  }
 
   const { data: allClients } = await supabase
     .from('profiles')

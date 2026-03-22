@@ -15,61 +15,6 @@ interface Props {
 
 const MILESTONES = [25, 50, 75, 100] as const
 
-// CSS book illustration
-function BookIcon({ size = 40 }: { size?: number }) {
-  return (
-    <div
-      style={{
-        width: size,
-        height: size * 1.25,
-        position: 'relative',
-        filter: 'drop-shadow(0 4px 8px rgba(184,131,42,0.4))',
-      }}
-    >
-      {/* Book spine */}
-      <div style={{
-        position: 'absolute',
-        left: 0,
-        top: 2,
-        bottom: 2,
-        width: size * 0.18,
-        background: 'linear-gradient(180deg, #8A5E0A, #6B4808)',
-        borderRadius: '3px 0 0 3px',
-      }} />
-      {/* Book cover */}
-      <div style={{
-        position: 'absolute',
-        left: size * 0.18,
-        top: 0,
-        right: 0,
-        bottom: 0,
-        background: 'linear-gradient(135deg, #C9922A, #B8832A, #9A6A10)',
-        borderRadius: '0 3px 3px 0',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 3,
-      }}>
-        {/* Decorative lines on cover */}
-        <div style={{ width: '55%', height: 1.5, background: 'rgba(255,255,255,0.35)', borderRadius: 1 }} />
-        <div style={{ width: '40%', height: 1, background: 'rgba(255,255,255,0.2)', borderRadius: 1 }} />
-        <div style={{ width: '55%', height: 1.5, background: 'rgba(255,255,255,0.35)', borderRadius: 1 }} />
-      </div>
-      {/* Pages edge */}
-      <div style={{
-        position: 'absolute',
-        right: -3,
-        top: 3,
-        bottom: 3,
-        width: 4,
-        background: 'linear-gradient(90deg, #F5EDD6, #EDE0C0)',
-        borderRadius: '0 2px 2px 0',
-      }} />
-    </div>
-  )
-}
-
 export default function JournalProgressBar({
   approvalPct,
   approvedSections,
@@ -98,28 +43,47 @@ export default function JournalProgressBar({
         <div>
           <h2 className="font-semibold text-lg" style={{ color: 'var(--accent)' }}>Your Journal Progress</h2>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
-            {totalSections > 0 ? `${approvedSections} of ${totalSections} sections approved` : 'Work in progress — sections coming soon'}
+            {totalSections > 0
+              ? `${approvedSections} of ${totalSections} sections approved`
+              : 'Your journal is being crafted — sections coming soon'}
           </p>
         </div>
-        {totalSections > 0 && (
-          <span
-            className="text-3xl font-bold"
+        <div className="flex items-center gap-3">
+          {/* Deposit status badge */}
+          <div
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
             style={{
-              background: 'linear-gradient(135deg, #9A6A10, #C9922A)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              background: depositPaid ? 'rgba(74,158,127,0.10)' : 'var(--accent-dim)',
+              border: `1px solid ${depositPaid ? 'rgba(74,158,127,0.3)' : 'rgba(184,131,42,0.25)'}`,
+              color: depositPaid ? 'var(--success)' : 'var(--accent)',
             }}
           >
-            {approvalPct}%
-          </span>
-        )}
+            {depositPaid
+              ? <><CheckCircle size={11} /> Deposit paid</>
+              : <>Deposit pending</>}
+            {depositAmount > 0 && ` · $${depositAmount.toLocaleString()}`}
+          </div>
+          {totalSections > 0 && (
+            <span
+              className="text-3xl font-bold"
+              style={{
+                background: 'linear-gradient(135deg, #9A6A10, #C9922A)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
+              {approvalPct}%
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* Progress bar with book */}
+      {/* Bar + book (only when sections exist) */}
       {totalSections > 0 && (
-        <div className="relative" style={{ paddingTop: 52, paddingBottom: 64 }}>
-          {/* Book riding the bar */}
+        <div className="relative" style={{ paddingTop: 44, paddingBottom: 72 }}>
+
+          {/* Book icon riding the bar */}
           <div
             className="absolute"
             style={{
@@ -130,27 +94,38 @@ export default function JournalProgressBar({
               zIndex: 10,
             }}
           >
-            <div style={{ width: 2, height: 10, background: 'rgba(184,131,42,0.3)', margin: '0 auto' }} />
-            <div style={{
-              animation: approvalPct > 0 && approvalPct < 100 ? 'bookBounce 2s ease-in-out infinite' : 'none',
-              display: 'flex',
-              justifyContent: 'center',
-            }}>
-              <BookIcon size={32} />
+            <div style={{ width: 2, height: 12, background: 'rgba(184,131,42,0.25)', margin: '0 auto' }} />
+            <div
+              className="flex items-center justify-center rounded-xl"
+              style={{
+                width: 40,
+                height: 40,
+                background: 'linear-gradient(135deg, #B8832A, #D4A84B)',
+                boxShadow: '0 4px 14px rgba(184,131,42,0.35), 0 0 0 3px rgba(184,131,42,0.10)',
+                animation: approvalPct > 0 && approvalPct < 100 ? 'bookBounce 2s ease-in-out infinite' : 'none',
+              }}
+            >
+              <BookIcon />
             </div>
           </div>
 
-          {/* Track */}
-          <div className="rounded-full overflow-visible relative" style={{ height: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)' }}>
+          {/* Progress track */}
+          <div
+            className="rounded-full overflow-visible relative"
+            style={{ height: 14, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)' }}
+          >
             <div
               className="h-full rounded-full"
               style={{
                 width: `${bookPct}%`,
-                background: approvalPct >= 100 ? 'linear-gradient(90deg, #2DD4BF, #34D399)' : 'linear-gradient(90deg, #B8832A, #9F7EC5)',
+                background: approvalPct >= 100
+                  ? 'linear-gradient(90deg, #2DD4BF, #34D399)'
+                  : 'linear-gradient(90deg, #B8832A, #9F7EC5)',
                 boxShadow: approvalPct > 0 ? '0 0 12px rgba(184,131,42,0.25)' : 'none',
                 transition: 'width 0.9s cubic-bezier(0.34, 1.56, 0.64, 1)',
               }}
             />
+
             {MILESTONES.map(ms => {
               const inv = invoices.find(i => i.milestone === ms)
               const isPaid = inv?.status === 'paid'
@@ -160,14 +135,15 @@ export default function JournalProgressBar({
                 <div key={ms} style={{
                   position: 'absolute', left: `${ms}%`, top: '50%',
                   transform: 'translate(-50%, -50%)',
-                  width: 18, height: 18, borderRadius: '50%',
+                  width: 20, height: 20, borderRadius: '50%',
                   background: isPaid ? 'var(--success)' : isSent ? '#FBBF24' : isReached ? '#B8832A' : 'var(--surface)',
                   border: `2px solid ${isPaid ? 'rgba(74,158,127,0.5)' : isSent ? 'rgba(201,139,10,0.5)' : isReached ? 'rgba(184,131,42,0.35)' : 'var(--border)'}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5,
-                  transition: 'all 0.5s ease',
+                  boxShadow: isSent && !isPaid ? '0 0 10px rgba(201,139,10,0.5)' : 'none',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  zIndex: 5, transition: 'all 0.5s ease',
                 }}>
-                  {isPaid && <CheckCircle size={10} color="var(--bg)" strokeWidth={3} />}
-                  {isSent && !isPaid && <span style={{ fontSize: 7, fontWeight: 800, color: '#0E1822' }}>$</span>}
+                  {isPaid && <CheckCircle size={11} color="var(--bg)" strokeWidth={3} />}
+                  {isSent && !isPaid && <span style={{ fontSize: 8, fontWeight: 800, color: '#0E1822' }}>$</span>}
                 </div>
               )
             })}
@@ -183,13 +159,13 @@ export default function JournalProgressBar({
               const align = ms === 25 ? 'flex-start' : ms === 100 ? 'flex-end' : 'center'
               const translateX = ms === 25 ? '0%' : ms === 100 ? '-100%' : '-50%'
               return (
-                <div key={ms} style={{ position: 'absolute', left: `${ms}%`, top: 0, transform: `translateX(${translateX})`, display: 'flex', flexDirection: 'column', alignItems: align, gap: 3 }}>
+                <div key={ms} style={{ position: 'absolute', left: `${ms}%`, top: 0, transform: `translateX(${translateX})`, display: 'flex', flexDirection: 'column', alignItems: align, gap: 4 }}>
                   <span className="text-xs font-bold" style={{ color: isPaid ? 'var(--success)' : isSent ? 'var(--warning)' : isReached ? 'var(--accent)' : 'var(--text-muted)' }}>{ms}%</span>
                   {milestoneAmount && <span className="text-xs" style={{ color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{milestoneAmount}</span>}
                   {isPaid && <span className="text-xs font-semibold" style={{ color: 'var(--success)' }}>Paid ✓</span>}
                   {isSent && !isPaid && inv?.hosted_invoice_url && (
                     <a href={inv.hosted_invoice_url} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-xs font-bold rounded-lg px-2.5 py-1.5 transition-all"
+                      className="flex items-center gap-1 text-xs font-bold rounded-lg px-2.5 py-1.5"
                       style={{ background: 'rgba(74,158,127,0.10)', color: 'var(--success)', border: '1px solid rgba(74,158,127,0.35)', animation: 'payGlow 2s ease-in-out infinite', whiteSpace: 'nowrap', textDecoration: 'none' }}>
                       <ExternalLink size={10} /> Pay Now
                     </a>
@@ -203,42 +179,10 @@ export default function JournalProgressBar({
         </div>
       )}
 
-      {/* Deposit + milestone payment summary */}
-      <div className="mt-4 flex flex-wrap gap-2">
-        {/* Deposit badge */}
-        <div className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium"
-          style={{
-            background: depositPaid ? 'rgba(74,158,127,0.08)' : 'var(--accent-dim)',
-            border: `1px solid ${depositPaid ? 'rgba(74,158,127,0.3)' : 'rgba(184,131,42,0.25)'}`,
-            color: depositPaid ? 'var(--success)' : 'var(--accent)',
-          }}>
-          {depositPaid ? <CheckCircle size={12} /> : <span style={{ fontSize: 11 }}>●</span>}
-          Deposit {depositAmount > 0 ? `($${depositAmount.toLocaleString()})` : ''} — {depositPaid ? 'Paid ✓' : 'Pending'}
-        </div>
-
-        {/* Milestone payment badges */}
-        {MILESTONES.map(ms => {
-          const inv = invoices.find(i => i.milestone === ms)
-          const isPaid = inv?.status === 'paid'
-          const isSent = inv?.status === 'sent'
-          return (
-            <div key={ms} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium"
-              style={{
-                background: isPaid ? 'rgba(74,158,127,0.08)' : isSent ? 'rgba(251,191,36,0.08)' : 'rgba(44,36,22,0.04)',
-                border: `1px solid ${isPaid ? 'rgba(74,158,127,0.3)' : isSent ? 'rgba(251,191,36,0.3)' : 'var(--border)'}`,
-                color: isPaid ? 'var(--success)' : isSent ? 'var(--warning)' : 'var(--text-muted)',
-              }}>
-              {isPaid ? <CheckCircle size={12} /> : <span style={{ fontSize: 11 }}>○</span>}
-              {ms}% milestone — {isPaid ? 'Paid ✓' : isSent ? 'Invoice sent' : 'Upcoming'}
-            </div>
-          )
-        })}
-      </div>
-
       <style>{`
         @keyframes bookBounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-4px); }
+          0%, 100% { transform: translateX(-50%) translateY(0px); }
+          50% { transform: translateX(-50%) translateY(-4px); }
         }
         @keyframes payGlow {
           0%, 100% { box-shadow: 0 0 8px rgba(74,158,127,0.25); }
@@ -246,5 +190,17 @@ export default function JournalProgressBar({
         }
       `}</style>
     </div>
+  )
+}
+
+function BookIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <rect x="3" y="2" width="2.5" height="16" rx="1" fill="rgba(0,0,0,0.3)" />
+      <rect x="5" y="1" width="12" height="18" rx="1.5" fill="rgba(255,255,255,0.25)" />
+      <line x1="8" y1="5" x2="14" y2="5" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="8" y1="8" x2="14" y2="8" stroke="rgba(255,255,255,0.4)" strokeWidth="1" strokeLinecap="round" />
+      <line x1="8" y1="11" x2="12" y2="11" stroke="rgba(255,255,255,0.4)" strokeWidth="1" strokeLinecap="round" />
+    </svg>
   )
 }
