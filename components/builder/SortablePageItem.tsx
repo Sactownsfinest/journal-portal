@@ -17,6 +17,15 @@ interface Props {
   page: Page
   index: number
   isSelected: boolean
+  // Section display
+  sectionColor?: string | null
+  sectionName?: string | null
+  // Range selection mode
+  rangeMode?: boolean
+  inPendingRange?: boolean
+  isPendingEndpoint?: boolean
+  onRangeClick?: () => void
+  // Normal actions
   onSelect: () => void
   onDelete: () => void
   onDuplicate: () => void
@@ -25,7 +34,10 @@ interface Props {
 }
 
 export default function SortablePageItem({
-  page, index, isSelected, onSelect, onDelete, onDuplicate, onDuplicateAsSection, onRename,
+  page, index, isSelected,
+  sectionColor, sectionName,
+  rangeMode, inPendingRange, isPendingEndpoint, onRangeClick,
+  onSelect, onDelete, onDuplicate, onDuplicateAsSection, onRename,
 }: Props) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: page.id })
   const [editing, setEditing] = useState(false)
@@ -42,6 +54,28 @@ export default function SortablePageItem({
 
   const displayName = page.content.name?.trim() || `Page ${index + 1}`
 
+  const handleClick = () => {
+    if (rangeMode && onRangeClick) {
+      onRangeClick()
+    } else {
+      onSelect()
+    }
+  }
+
+  // Border/background based on state
+  let borderColor = 'transparent'
+  let bg = 'transparent'
+  if (isPendingEndpoint) {
+    borderColor = 'var(--accent)'
+    bg = 'rgba(184,131,42,0.15)'
+  } else if (inPendingRange) {
+    borderColor = 'rgba(184,131,42,0.4)'
+    bg = 'rgba(184,131,42,0.07)'
+  } else if (isSelected && !rangeMode) {
+    borderColor = 'rgba(184,131,42,0.35)'
+    bg = 'rgba(184,131,42,0.08)'
+  }
+
   return (
     <div
       ref={setNodeRef}
@@ -49,23 +83,29 @@ export default function SortablePageItem({
         transform: CSS.Transform.toString(transform),
         transition,
         opacity: isDragging ? 0.4 : 1,
-        background: isSelected ? 'rgba(184,131,42,0.08)' : undefined,
-        border: isSelected ? '1px solid rgba(184,131,42,0.35)' : '1px solid transparent',
+        background: bg,
+        border: `1px solid ${borderColor}`,
         borderRadius: 10,
         marginBottom: 4,
+        // Colored left bar for section membership
+        borderLeft: sectionColor ? `3px solid ${sectionColor}` : `1px solid ${borderColor}`,
+        cursor: rangeMode ? 'crosshair' : 'pointer',
       }}
       className="group"
     >
-      <div className="flex items-center gap-1 px-2 py-2 cursor-pointer" onClick={onSelect}>
-        <button
-          {...attributes}
-          {...listeners}
-          className="cursor-grab active:cursor-grabbing shrink-0"
-          style={{ color: 'var(--border)', touchAction: 'none' }}
-          onClick={e => e.stopPropagation()}
-        >
-          <GripVertical size={13} />
-        </button>
+      <div className="flex items-center gap-1 px-2 py-2" onClick={handleClick}>
+        {/* Drag handle — hidden in range mode */}
+        {!rangeMode && (
+          <button
+            {...attributes}
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing shrink-0"
+            style={{ color: 'var(--border)', touchAction: 'none' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <GripVertical size={13} />
+          </button>
+        )}
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
@@ -88,39 +128,49 @@ export default function SortablePageItem({
               <span
                 className="text-xs truncate"
                 style={{ color: 'var(--text)' }}
-                onDoubleClick={e => { e.stopPropagation(); setEditing(true) }}
-                title="Double-click to rename"
+                onDoubleClick={e => { if (!rangeMode) { e.stopPropagation(); setEditing(true) } }}
+                title={sectionName ? `Section: ${sectionName}` : 'Double-click to rename'}
               >
                 {displayName}
               </span>
             )}
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: 10, marginLeft: 12 }}>#{index + 1}</p>
+          <div className="flex items-center gap-1.5" style={{ marginLeft: 12 }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: 10 }}>#{index + 1}</p>
+            {sectionColor && sectionName && (
+              <p style={{ color: sectionColor, fontSize: 9, fontWeight: 600 }} className="truncate">
+                {sectionName}
+              </p>
+            )}
+          </div>
         </div>
 
-        <div
-          className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-          onClick={e => e.stopPropagation()}
-        >
-          <button onClick={onDuplicate} title="Duplicate page"
-            className="w-5 h-5 rounded flex items-center justify-center"
-            style={{ color: 'var(--text-muted)' }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
-          ><Copy size={11} /></button>
-          <button onClick={onDuplicateAsSection} title="Duplicate as 4-page section"
-            className="w-5 h-5 rounded flex items-center justify-center"
-            style={{ color: 'var(--text-muted)' }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'var(--violet)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
-          ><CopyPlus size={11} /></button>
-          <button onClick={onDelete} title="Delete page"
-            className="w-5 h-5 rounded flex items-center justify-center"
-            style={{ color: 'var(--text-muted)' }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'var(--danger)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
-          ><Trash2 size={11} /></button>
-        </div>
+        {/* Action buttons — hidden in range mode */}
+        {!rangeMode && (
+          <div
+            className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+            onClick={e => e.stopPropagation()}
+          >
+            <button onClick={onDuplicate} title="Duplicate page"
+              className="w-5 h-5 rounded flex items-center justify-center"
+              style={{ color: 'var(--text-muted)' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+            ><Copy size={11} /></button>
+            <button onClick={onDuplicateAsSection} title="Duplicate as 4-page section"
+              className="w-5 h-5 rounded flex items-center justify-center"
+              style={{ color: 'var(--text-muted)' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--violet)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+            ><CopyPlus size={11} /></button>
+            <button onClick={onDelete} title="Delete page"
+              className="w-5 h-5 rounded flex items-center justify-center"
+              style={{ color: 'var(--text-muted)' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--danger)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+            ><Trash2 size={11} /></button>
+          </div>
+        )}
       </div>
     </div>
   )
