@@ -34,36 +34,36 @@ const CATEGORIES = [
     key: 'images' as AssetCategory,
     label: 'Images',
     icon: ImageIcon,
-    color: '#5B8DB8',
-    bg: 'rgba(91,141,184,0.12)',
-    border: 'rgba(91,141,184,0.30)',
+    color: '#C0524A',          // --danger (warm red-terracotta)
+    bg: 'rgba(192,82,74,0.10)',
+    border: 'rgba(192,82,74,0.28)',
     accept: '.jpg,.jpeg,.png,.webp,.gif,.heic',
   },
   {
     key: 'prompts' as AssetCategory,
     label: 'Prompts',
     icon: BookOpen,
-    color: '#B8832A',
-    bg: 'rgba(184,131,42,0.12)',
-    border: 'rgba(184,131,42,0.30)',
+    color: '#B8832A',          // --accent gold
+    bg: 'rgba(184,131,42,0.10)',
+    border: 'rgba(184,131,42,0.28)',
     accept: '.pdf,.doc,.docx,.txt',
   },
   {
     key: 'story' as AssetCategory,
     label: 'Your Story',
     icon: FileText,
-    color: '#8B6BAE',
-    bg: 'rgba(139,107,174,0.12)',
-    border: 'rgba(139,107,174,0.30)',
+    color: '#8B6BAE',          // --violet
+    bg: 'rgba(139,107,174,0.10)',
+    border: 'rgba(139,107,174,0.28)',
     accept: '.pdf,.doc,.docx,.txt',
   },
   {
     key: 'scriptures' as AssetCategory,
     label: 'Scriptures',
     icon: Scroll,
-    color: '#4A9E7F',
-    bg: 'rgba(74,158,127,0.12)',
-    border: 'rgba(74,158,127,0.30)',
+    color: '#4A9E7F',          // --success green
+    bg: 'rgba(74,158,127,0.10)',
+    border: 'rgba(74,158,127,0.28)',
     accept: '.pdf,.doc,.docx,.txt',
   },
 ] as const
@@ -80,6 +80,31 @@ function isImage(asset: Asset) {
     /\.(jpg|jpeg|png|webp|gif|heic)$/i.test(asset.file_name))
 }
 
+// Fixed-position image tooltip shown while hovering a file row
+function FileTooltip({ asset, mouseY }: { asset: Asset; mouseY: number }) {
+  if (!isImage(asset)) return null
+  return (
+    <div
+      className="pointer-events-none fixed z-[100] rounded-2xl overflow-hidden shadow-2xl"
+      style={{
+        right: 420,
+        top: Math.min(mouseY - 80, window.innerHeight - 220),
+        width: 200,
+        background: 'var(--card)',
+        border: '1.5px solid var(--border)',
+        boxShadow: '0 8px 32px rgba(44,36,22,0.18)',
+      }}
+    >
+      <img src={asset.file_url} alt={asset.file_name}
+        style={{ width: '100%', height: 150, objectFit: 'cover', display: 'block' }} />
+      <div className="px-3 py-2">
+        <p className="text-xs font-semibold truncate" style={{ color: 'var(--text)' }}>{asset.file_name}</p>
+        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{formatBytes(asset.file_size)}</p>
+      </div>
+    </div>
+  )
+}
+
 // Slide-out drawer showing files for a category
 function CategoryDrawer({ cat, assets, canDelete, uploading, onUpload, onDelete, onClose }: {
   cat: typeof CATEGORIES[number]
@@ -92,9 +117,13 @@ function CategoryDrawer({ cat, assets, canDelete, uploading, onUpload, onDelete,
 }) {
   const Icon = cat.icon
   const [preview, setPreview] = useState<Asset | null>(null)
+  const [tooltip, setTooltip] = useState<{ asset: Asset; y: number } | null>(null)
 
   return (
     <>
+      {/* Fixed image tooltip */}
+      {tooltip && <FileTooltip asset={tooltip.asset} mouseY={tooltip.y} />}
+
       {/* Backdrop */}
       <div
         className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
@@ -180,10 +209,15 @@ function CategoryDrawer({ cat, assets, canDelete, uploading, onUpload, onDelete,
                   onMouseEnter={e => {
                     e.currentTarget.style.background = cat.bg
                     e.currentTarget.style.borderColor = cat.border
+                    if (isImage(asset)) setTooltip({ asset, y: e.clientY })
+                  }}
+                  onMouseMove={e => {
+                    if (isImage(asset)) setTooltip({ asset, y: e.clientY })
                   }}
                   onMouseLeave={e => {
                     e.currentTarget.style.background = 'rgba(44,36,22,0.02)'
                     e.currentTarget.style.borderColor = 'var(--border)'
+                    setTooltip(null)
                   }}
                   onClick={() => isImage(asset) && setPreview(asset)}
                 >
