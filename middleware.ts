@@ -50,6 +50,7 @@ export async function middleware(request: NextRequest) {
           .from('projects').select('id').eq('client_id', user.id)
           .order('created_at', { ascending: false }).limit(1).single()
         if (project) return NextResponse.redirect(new URL(`/client/projects/${project.id}`, request.url))
+        return NextResponse.redirect(new URL('/client/no-project', request.url))
       }
       return NextResponse.redirect(new URL('/login', request.url))
     }

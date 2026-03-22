@@ -42,7 +42,7 @@ export default function LoginPage() {
         .order('created_at', { ascending: false })
         .limit(1)
         .single()
-      router.push(project ? `/client/projects/${project.id}` : '/login')
+      router.push(project ? `/client/projects/${project.id}` : '/client/no-project')
     }
   }
 
