@@ -64,8 +64,9 @@ export async function middleware(request: NextRequest) {
     }
 
   } catch (e) {
-    // If Supabase fails, redirect to login
-    return NextResponse.redirect(new URL('/login', request.url))
+    // On transient errors (network blip, Supabase timeout), pass through —
+    // page-level auth will redirect if truly unauthenticated
+    return NextResponse.next()
   }
 
   return supabaseResponse
