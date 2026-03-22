@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import ApprovalPanel from '@/components/approval/ApprovalPanel'
@@ -36,6 +36,20 @@ export default async function ClientProjectPage({
     .single()
 
   if (!project) notFound()
+
+  // If Stripe redirected back with ?deposit=success, proactively mark the deposit as done
+  // in case the webhook hasn't fired yet or was delayed.
+  if (searchParams.deposit === 'success' && project.status === 'awaiting_deposit') {
+    const service = await createServiceClient()
+    await Promise.all([
+      service.from('projects').update({ status: 'in_progress' }).eq('id', params.id),
+      service.from('engagement_letters')
+        .update({ stripe_deposit_invoice_id: 'checkout_success' })
+        .eq('project_id', params.id)
+        .is('stripe_deposit_invoice_id', null),
+    ])
+    project.status = 'in_progress'
+  }
 
   const [pagesRes, sectionsRes, invoicesRes, letterRes, assetsRes] = await Promise.all([
     supabase.from('pages').select('*').eq('project_id', params.id).order('order_index'),
@@ -116,8 +130,8 @@ export default async function ClientProjectPage({
         </div>
       )}
 
-      {/* Progress bar — always visible at top when sections exist */}
-      {totalSections > 0 && (
+      {/* Progress bar — show whenever project is active (in_progress, ready_for_review, complete) */}
+      {(project.status === 'in_progress' || project.status === 'ready_for_review' || project.status === 'complete') && (
         <JournalProgressBar
           approvalPct={approvalPct}
           approvedSections={approvedSections}
