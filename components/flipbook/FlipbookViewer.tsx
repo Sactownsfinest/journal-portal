@@ -4,27 +4,40 @@ import { useRef } from 'react'
 import HTMLFlipBook from 'react-pageflip'
 import type { Page } from '@/types'
 
+// Must match DesignerCanvas constants
+const CANVAS_W = 420
+const CANVAS_H = 595
+
+// Flipbook display dimensions (one page of the spread)
+const DISPLAY_W = 320
+const DISPLAY_H = 454
+
+// Scale factor so the full canvas fits exactly in the flipbook page
+const CANVAS_SCALE = Math.min(DISPLAY_W / CANVAS_W, DISPLAY_H / CANVAS_H)
+
 interface Props {
   pages: Page[]
 }
 
 function FlipPage({ page, pageNumber }: { page: Page; pageNumber: number }) {
   const c = page.content
-
   const isCanvas = !!(c.elements && c.elements.length > 0)
 
   const baseStyle: React.CSSProperties = {
-    background: isCanvas ? (c.bg_color || '#fdf8f0') : '#fdf8f0',
-    width: '100%',
-    height: '100%',
+    background: '#fdf8f0',
+    width: DISPLAY_W,
+    height: DISPLAY_H,
     fontFamily: 'Georgia, serif',
     position: 'relative',
     overflow: 'hidden',
+    flexShrink: 0,
   }
 
   return (
     <div style={baseStyle}>
-      {page.template_type === 'cover' && (
+
+      {/* ── Legacy template types ── */}
+      {!isCanvas && page.template_type === 'cover' && (
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
           {c.image_url && (
             <img src={c.image_url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -37,13 +50,13 @@ function FlipPage({ page, pageNumber }: { page: Page; pageNumber: number }) {
         </div>
       )}
 
-      {page.template_type === 'full_image' && (
+      {!isCanvas && page.template_type === 'full_image' && (
         c.image_url
           ? <img src={c.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           : <div style={{ width: '100%', height: '100%', background: '#e8e0d0' }} />
       )}
 
-      {page.template_type === 'text_image' && (
+      {!isCanvas && page.template_type === 'text_image' && (
         <div style={{ display: 'flex', height: '100%' }}>
           <div style={{ width: '40%', order: c.image_side === 'right' ? 2 : 1 }}>
             {c.image_url
@@ -60,7 +73,7 @@ function FlipPage({ page, pageNumber }: { page: Page; pageNumber: number }) {
         </div>
       )}
 
-      {page.template_type === 'prompt_lines' && (
+      {!isCanvas && page.template_type === 'prompt_lines' && (
         <div style={{ padding: 24 }}>
           {c.prompt_text && (
             <p style={{ fontSize: 10, fontStyle: 'italic', color: '#3a2e1a', marginBottom: 20, lineHeight: 1.6 }}>
@@ -73,10 +86,24 @@ function FlipPage({ page, pageNumber }: { page: Page; pageNumber: number }) {
         </div>
       )}
 
-      {/* Free-form canvas elements */}
-      {c.elements && c.elements.length > 0 && (
-        <div style={{ position: 'absolute', inset: 0, background: c.bg_color || 'transparent' }}>
-          {c.elements.map(el => {
+      {/* ── Free-form canvas pages ──
+          Render at the native 420×595 design size, then CSS-scale down to
+          DISPLAY_W×DISPLAY_H so every element is pixel-perfect. */}
+      {isCanvas && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: CANVAS_W,
+            height: CANVAS_H,
+            transformOrigin: 'top left',
+            transform: `scale(${CANVAS_SCALE})`,
+            background: c.bg_color || '#fdf8f0',
+            overflow: 'hidden',
+          }}
+        >
+          {c.elements!.map(el => {
             const base: React.CSSProperties = {
               position: 'absolute',
               left: `${el.x}%`,
@@ -142,7 +169,7 @@ function FlipPage({ page, pageNumber }: { page: Page; pageNumber: number }) {
       )}
 
       {/* Page number */}
-      <div style={{ position: 'absolute', bottom: 8, left: 0, right: 0, textAlign: 'center', fontSize: 8, color: '#c8b89a' }}>
+      <div style={{ position: 'absolute', bottom: 8, left: 0, right: 0, textAlign: 'center', fontSize: 8, color: '#c8b89a', zIndex: 10 }}>
         {pageNumber}
       </div>
     </div>
@@ -168,8 +195,8 @@ export default function FlipbookViewer({ pages }: Props) {
       {/* @ts-ignore — HTMLFlipBook types are loose */}
       <HTMLFlipBook
         ref={bookRef}
-        width={320}
-        height={454}
+        width={DISPLAY_W}
+        height={DISPLAY_H}
         size="fixed"
         minWidth={200}
         maxWidth={500}
@@ -193,11 +220,11 @@ export default function FlipbookViewer({ pages }: Props) {
       >
         {displayPages.map((page, idx) =>
           page ? (
-            <div key={page.id} style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
+            <div key={page.id} style={{ width: DISPLAY_W, height: DISPLAY_H, overflow: 'hidden' }}>
               <FlipPage page={page} pageNumber={idx + 1} />
             </div>
           ) : (
-            <div key="blank-end" style={{ background: '#fdf8f0', width: '100%', height: '100%', overflow: 'hidden' }} />
+            <div key="blank-end" style={{ background: '#fdf8f0', width: DISPLAY_W, height: DISPLAY_H }} />
           )
         )}
       </HTMLFlipBook>
