@@ -25,16 +25,19 @@ export async function POST(req: Request) {
   }
 
   try {
-    const sessions = await stripe.checkout.sessions.search({
-      query: `metadata['project_id']:'${projectId}' AND metadata['type']:'deposit' AND status:'complete'`,
-      limit: 1,
-    })
+    const sessions = await stripe.checkout.sessions.list({ limit: 20 })
 
-    if (sessions.data.length === 0) {
+    const completed = sessions.data.find(
+      s => s.metadata?.project_id === projectId &&
+           s.metadata?.type === 'deposit' &&
+           s.status === 'complete'
+    )
+
+    if (!completed) {
       return NextResponse.json({ synced: false })
     }
 
-    const paymentIntent = sessions.data[0].payment_intent as string
+    const paymentIntent = completed.payment_intent as string
     const service = await createServiceClient()
 
     await Promise.all([

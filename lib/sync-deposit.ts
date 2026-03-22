@@ -7,14 +7,19 @@ import { createServiceClient } from '@/lib/supabase/server'
  */
 export async function syncDepositIfPaid(projectId: string): Promise<boolean> {
   try {
-    const sessions = await stripe.checkout.sessions.search({
-      query: `metadata['project_id']:'${projectId}' AND metadata['type']:'deposit' AND status:'complete'`,
-      limit: 1,
+    const sessions = await stripe.checkout.sessions.list({
+      limit: 20,
     })
 
-    if (sessions.data.length === 0) return false
+    const completed = sessions.data.find(
+      s => s.metadata?.project_id === projectId &&
+           s.metadata?.type === 'deposit' &&
+           s.status === 'complete'
+    )
 
-    const paymentIntent = (sessions.data[0].payment_intent as string) || 'checkout_complete'
+    if (!completed) return false
+
+    const paymentIntent = (completed.payment_intent as string) || 'checkout_complete'
     const service = await createServiceClient()
 
     await Promise.all([
