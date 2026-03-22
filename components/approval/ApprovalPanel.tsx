@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import { createClient } from '@/lib/supabase/client'
 import { CheckCircle, XCircle, MessageSquare, Eye, X, BookOpen } from 'lucide-react'
 import type { Section, Page } from '@/types'
+import SectionNotes from '@/components/approval/SectionNotes'
 
 const FlipbookViewer = dynamic(() => import('@/components/flipbook/FlipbookViewer'), { ssr: false })
 
@@ -151,7 +152,8 @@ interface CardProps {
 }
 
 function SectionCard({ section, note, onNoteChange, onDecision, loading, hasPages, onPreview }: CardProps) {
-  const [showNotes, setShowNotes] = useState(section.status === 'rejected')
+  const [showNotes, setShowNotes] = useState(false)
+  const [showDecisionNote, setShowDecisionNote] = useState(section.status === 'rejected')
   const isDone = section.status === 'approved' || section.status === 'rejected'
 
   const borderColor = section.status === 'approved'
@@ -213,13 +215,13 @@ function SectionCard({ section, note, onNoteChange, onDecision, loading, hasPage
           {!isDone && (
             <>
               <button
-                onClick={() => setShowNotes(v => !v)}
+                onClick={() => setShowDecisionNote(v => !v)}
                 className="p-2 rounded-lg border transition-colors"
-                style={showNotes
+                style={showDecisionNote
                   ? { borderColor: 'rgba(212,175,55,0.5)', color: 'var(--accent)' }
                   : { borderColor: 'var(--border)', color: 'var(--text-muted)' }
                 }
-                title="Add note"
+                title="Add decision note"
               >
                 <MessageSquare size={15} />
               </button>
@@ -244,7 +246,7 @@ function SectionCard({ section, note, onNoteChange, onDecision, loading, hasPage
         </div>
       </div>
 
-      {showNotes && !isDone && (
+      {showDecisionNote && !isDone && (
         <div className="mt-4">
           <label className="label">Note for designer (optional)</label>
           <textarea
@@ -255,6 +257,21 @@ function SectionCard({ section, note, onNoteChange, onDecision, loading, hasPage
           />
         </div>
       )}
+
+      {/* Notes thread */}
+      <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
+        <div className="flex items-center justify-between mb-3">
+          <button
+            onClick={() => setShowNotes(v => !v)}
+            className="flex items-center gap-1.5 text-xs font-semibold"
+            style={{ color: showNotes ? 'var(--accent)' : 'var(--text-muted)' }}
+          >
+            <MessageSquare size={12} />
+            {showNotes ? 'Hide notes' : 'Notes & comments'}
+          </button>
+        </div>
+        {showNotes && <SectionNotes sectionId={section.id} viewerRole="client" />}
+      </div>
 
       {loading && (
         <div className="mt-3 flex items-center gap-2 text-sm" style={{ color: 'var(--text-muted)' }}>

@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { RotateCcw, CheckCircle, Pencil, Eye, Trash2, X, BookOpen, Send } from 'lucide-react'
+import { RotateCcw, CheckCircle, Pencil, Eye, Trash2, X, BookOpen, Send, MessageSquare } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import type { Page, Section } from '@/types'
+import SectionNotes from '@/components/approval/SectionNotes'
 
 const FlipbookViewer = dynamic(() => import('@/components/flipbook/FlipbookViewer'), { ssr: false })
 
@@ -35,6 +36,7 @@ export default function SectionRow({ section, pages, allSections }: Props) {
   const [showEdit, setShowEdit] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [showNotes, setShowNotes] = useState(false)
   const router = useRouter()
   const s = STATUS_CONFIG[section.status] ?? STATUS_CONFIG.draft
 
@@ -112,6 +114,18 @@ export default function SectionRow({ section, pages, allSections }: Props) {
               </button>
             )}
 
+            {/* Notes toggle */}
+            <button
+              onClick={() => setShowNotes(v => !v)}
+              title="Section notes"
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all"
+              style={showNotes
+                ? { color: 'var(--accent)', border: '1px solid rgba(184,131,42,0.4)', background: 'rgba(184,131,42,0.1)' }
+                : { color: 'var(--text-muted)', border: '1px solid var(--border)', background: 'var(--surface)' }}
+            >
+              <MessageSquare size={12} /> Notes
+            </button>
+
             {/* Preview */}
             <button
               onClick={() => setShowPreview(true)}
@@ -167,6 +181,13 @@ export default function SectionRow({ section, pages, allSections }: Props) {
             </button>
           </div>
         </div>
+
+        {/* Notes thread */}
+        {showNotes && (
+          <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
+            <SectionNotes sectionId={section.id} viewerRole="admin" />
+          </div>
+        )}
       </div>
 
       {/* Preview Modal */}
