@@ -139,7 +139,27 @@ export default async function ClientProjectPage({
       {/* Project Assets */}
       <ProjectAssets projectId={params.id} initialAssets={initialAssets as any} />
 
-      {!isReadyForReview ? (
+      {/* Flipbook preview — only when ready for review */}
+      {isReadyForReview && pages && pages.length > 0 && (
+        <div>
+          <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--accent)' }}>Your Journal Preview</h2>
+          <div className="flex justify-center">
+            <FlipbookViewer pages={pages} />
+          </div>
+        </div>
+      )}
+
+      {/* Sections — show whenever they exist */}
+      {sections && sections.length > 0 ? (
+        <div>
+          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--accent)' }}>Review &amp; Approve Sections</h2>
+          <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
+            Review each section of your journal and approve or request changes.
+            Payments process automatically at each milestone.
+          </p>
+          <ApprovalPanel sections={sections} projectId={params.id} />
+        </div>
+      ) : (
         <div className="card text-center py-20">
           <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
             style={{ background: 'var(--violet-dim)', border: '1.5px solid rgba(139,107,174,0.2)' }}>
@@ -150,29 +170,6 @@ export default async function ClientProjectPage({
             You&apos;ll receive an email when it&apos;s ready for your review.
           </p>
         </div>
-      ) : (
-        <>
-
-          {pages && pages.length > 0 && (
-            <div>
-              <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--accent)' }}>Your Journal Preview</h2>
-              <div className="flex justify-center">
-                <FlipbookViewer pages={pages} />
-              </div>
-            </div>
-          )}
-
-          {sections && sections.length > 0 && (
-            <div>
-              <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--accent)' }}>Review &amp; Approve Sections</h2>
-              <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
-                Review each section of your journal and approve or request changes.
-                Payments process automatically at each milestone.
-              </p>
-              <ApprovalPanel sections={sections} projectId={params.id} />
-            </div>
-          )}
-        </>
       )}
     </div>
   )
