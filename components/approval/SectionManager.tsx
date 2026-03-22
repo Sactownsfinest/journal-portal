@@ -81,7 +81,7 @@ export default function SectionManager({ projectId, pages, existingSections }: P
       name: name.trim(),
       page_start: start,
       page_end: end,
-      status: 'pending',
+      status: 'draft',
     })
 
     if (err) {
